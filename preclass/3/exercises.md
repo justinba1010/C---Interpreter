@@ -12,8 +12,10 @@ identifiers that ambiguously could include integers.
 Construct a nondeterministic and a deterministic automaton for this kind of
 comments.
 
-`/*[$\Sigma$]*/`
+`/*[Σ]*/`
+
 ![](image2.svg)
+
 I kind of cheated on the NFA.
 
 3-2.+ Write a compiler from regular expressions to NFA’s, covering
