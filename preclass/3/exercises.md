@@ -3,7 +3,7 @@ Complete it into an automaton that recognizes any sequence of such tokens,
 with any number of spaces in between. When are spaces obligatory, to keep
 the automaton deterministic?
 
-![](image1.svg)
+![](./image1.svg)
 
 Spaces are necessary for distinguishing identifiers from integers. If we didn't space delimit, we would have
 identifiers that ambiguously could include integers.
@@ -14,7 +14,8 @@ comments.
 
 `/*[Σ]*/`
 
-![](image2.svg)
+
+![](./image2.svg)
 
 I kind of cheated on the NFA.
 
