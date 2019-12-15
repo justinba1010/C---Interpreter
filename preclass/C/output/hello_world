@@ -1,0 +1,15 @@
+
+Parse Successful!
+
+[Abstract Syntax]
+
+Progr [Afunc (NewFunc [Type Tint] (NoPointer (NewFuncDec (Name (Ident "main")) (AllSpec (MoreParamDec (ParamDec (TypeAndParam [Type Tint] (NoPointer (Name (Ident "argc"))))) (TypeAndParam [Type Tchar] (BeginPointer Point (Incomplete (Name (Ident "argv"))))))))) (ScompFour [Declarators [Type Tchar] [InitDecl (NoPointer (Incomplete (Name (Ident "helloworld")))) (InitExpr (Estring "hello world"))]] [ExprS (SexprTwo (Efunkpar (Evar (Ident "printf")) [Evar (Ident "helloworld")])),JumpS (SjumpFive (Econst (Eoctal (Octal "0"))))]))]
+
+[Linearized tree]
+
+int main (int argc, char * argv []){
+  char helloworld [] = "hello world" ;
+  printf (helloworld);
+  return 0 ;
+  }
+
