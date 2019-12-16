@@ -1,0 +1,9 @@
+token Letter (letter);
+
+EExpr.      Exp   ::= Exp;
+ESymbol.    Exp4  ::= Letter;
+ESequence.  Exp3  ::= Exp3 "?" Exp4;
+EClosure.   Exp2  ::= Exp2 "*";
+EUnion.     Exp1  ::= Exp1 "|" Exp2;
+
+coercions Exp 4;

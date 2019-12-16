@@ -1,0 +1,5 @@
+_. Exp   ::= Exp;
+EInt. Exp3  ::= Integer;
+EMul. Exp2  ::= Exp2 "*" Exp3;
+EAdd. Exp1  ::= Exp1 "+" Exp2;
+coercions Exp 3;

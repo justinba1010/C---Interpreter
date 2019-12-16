@@ -1,0 +1,7 @@
+bipush 10;
+bipush 20;
+iadd;
+bipush 10;
+imul;
+bipush 300;
+isub;

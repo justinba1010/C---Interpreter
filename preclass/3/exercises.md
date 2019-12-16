@@ -27,7 +27,6 @@ stronger than sequence, sequence stronger than union. The automata and the
 compiler can be expressed in a mathematical notation and pseudocode. For
 instance, the definition of automata for one-symbol expressions suggests
 
-Skipped for now.
-
-
+1. Parser & Grammar
+I changed the precedence, and have an issue breaking up on character basis.
 

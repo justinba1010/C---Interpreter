@@ -1,0 +1,4 @@
+bipush 1;
+iadd;
+bipush 1;
+jumpifleq 2 -3;

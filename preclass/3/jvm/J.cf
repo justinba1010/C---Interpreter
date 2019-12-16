@@ -1,0 +1,11 @@
+Program.  Prg   ::= [Exp];
+
+terminator Exp ";";
+EBipush.  Exp   ::= "bipush" Integer;
+EAdd.     Exp   ::= "iadd";
+ESub.     Exp   ::= "isub";
+EDiv.     Exp   ::= "idiv";
+EMul.     Exp   ::= "imul";
+EPop.     Exp   ::= "ipop";
+EJump.    Exp   ::= "jump" Integer;
+EJlt.     Exp   ::= "jumpifleq" Integer Integer;

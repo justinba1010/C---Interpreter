@@ -1,0 +1,5 @@
+bipush 2;
+jumpifleq 2 1;
+bipush 3;
+bipush 1;
+imul;
