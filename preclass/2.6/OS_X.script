@@ -1,0 +1,124 @@
+Script started on Sat Feb 15 19:03:56 2020
+[0;34m[/Users/justinbaum/USC/CSCE531/preclass/2.6][0;36m (master)
+[0;37m~/USC/CSCE531/preclass/2.6 $ make i[Kdistclean
+rm -f Calc/Absyn/Exp.java Calc/Absyn/ESqrt.java Calc/Absyn/EAdd.java Calc/Absyn/ESub.java Calc/Absyn/EMul.java Calc/Absyn/EDiv.java Calc/Absyn/EInt.java Calc/Absyn/Exp.class Calc/Absyn/ESqrt.class Calc/Absyn/EAdd.class Calc/Absyn/ESub.class Calc/Absyn/EMul.class Calc/Absyn/EDiv.class Calc/Absyn/EInt.class
+rm -f Calc/Absyn/*.class
+rmdir Calc/Absyn/
+rm -f Calc/Yylex Calc/_cup.cup Calc/Yylex.java Calc/VisitSkel.java Calc/ComposVisitor.java Calc/AbstractVisitor.java Calc/FoldVisitor.java Calc/AllVisitor.java Calc/PrettyPrinter.java Calc/Skeleton.java Calc/Test.java Calc/parser.java Calc/sym.java Calc/*.class
+rm -f Makefile
+rmdir -p Calc/
+[0;34m[/Users/justinbaum/USC/CSCE531/preclass/2.6][0;36m (master)
+[0;37m~/USC/CSCE531/preclass/2.6 $ tree[K[K[K[Kls
+Calc.cf		Interpret.hs	OS_X.script
+[0;34m[/Users/justinbaum/USC/CSCE531/preclass/2.6][0;36m (master)
+[0;37m~/USC/CSCE531/preclass/2.6 $ rm [K[K[Km[Kbnfc -m --ka[K[Kjava Calc.cf 
+9 rules accepted
+
+   (Tested with  JLex 1.2.6. )
+   (Parser created only for category Exp)
+   (Tested with  CUP 0.11b )
+writing new file ./Calc/Absyn/Exp.java
+writing new file ./Calc/Absyn/ESqrt.java
+writing new file ./Calc/Absyn/EAdd.java
+writing new file ./Calc/Absyn/ESub.java
+writing new file ./Calc/Absyn/EMul.java
+writing new file ./Calc/Absyn/EDiv.java
+writing new file ./Calc/Absyn/EInt.java
+writing new file ./Calc/PrettyPrinter.java
+writing new file ./Calc/VisitSkel.java
+writing new file ./Calc/ComposVisitor.java
+writing new file ./Calc/AbstractVisitor.java
+writing new file ./Calc/FoldVisitor.java
+writing new file ./Calc/AllVisitor.java
+writing new file ./Calc/Test.java
+writing new file ./Calc/Yylex
+writing new file ./Calc/_cup.cup
+writing new file ./Makefile
+[0;34m[/Users/justinbaum/USC/CSCE531/preclass/2.6][0;36m (master)
+[0;37m~/USC/CSCE531/preclass/2.6 $ make
+javac -sourcepath . Calc/Absyn/Exp.java Calc/Absyn/ESqrt.java Calc/Absyn/EAdd.java Calc/Absyn/ESub.java Calc/Absyn/EMul.java Calc/Absyn/EDiv.java Calc/Absyn/EInt.java
+java  JLex.Main  Calc/Yylex
+Processing first section -- user code.
+Processing second section -- JLex declarations.
+Processing third section -- lexical rules.
+Creating NFA machine representation.
+NFA comprised of 37 states.
+Working on character classes.:::::::.:::.
+NFA has 12 distinct character classes.
+Creating DFA transition table.
+Working on DFA states......................
+Minimizing DFA transition table.
+14 states after removal of redundant states.
+Outputting lexical analyzer code.
+java  java_cup.Main -nopositions -expect 100 Calc/_cup.cup
+------- CUP v0.11b 20160615 (GIT 4ac7450) Parser Generation Summary -------
+  0 errors and 0 warnings
+  10 terminals, 3 non-terminals, and 10 productions declared, 
+  producing 20 unique parse states.
+  0 terminals declared but not used.
+  0 non-terminals declared but not used.
+  0 productions never reduced.
+  0 conflicts detected (100 expected).
+  Code written to "parser.java", and "sym.java".
+---------------------------------------------------- (CUP v0.11b 20160615 (GIT 4ac7450))
+mv parser.java sym.java Calc/
+javac -sourcepath . Calc/Yylex.java Calc/parser.java Calc/sym.java
+Note: Calc/Yylex.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+javac -sourcepath . Calc/PrettyPrinter.java
+javac -sourcepath . Calc/Test.java
+javac -sourcepath . Calc/ComposVisitor.java
+javac -sourcepath . Calc/AbstractVisitor.java
+javac -sourcepath . Calc/FoldVisitor.java
+[0;34m[/Users/justinbaum/USC/CSCE531/preclass/2.6][0;36m (master)
+[0;37m~/USC/CSCE531/preclass/2.6 $ ls
+Calc		Calc.cf		Interpret.hs	Makefile	OS_X.script
+[0;34m[/Users/justinbaum/USC/CSCE531/preclass/2.6][0;36m (master)
+[0;37m~/USC/CSCE531/preclass/2.6 $ ./Calc/Absyn/
+[0;34m[/Users/justinbaum/USC/CSCE531/preclass/2.6][0;36m (master)
+[0;37m~/USC/CSCE531/preclass/2.6 $ ls Calc
+Calc/    Calc.cf  
+[0;34m[/Users/justinbaum/USC/CSCE531/preclass/2.6][0;36m (master)
+[0;37m~/USC/CSCE531/preclass/2.6 $ ls Calc/
+AbstractVisitor.class            AllVisitor.java                  FoldVisitor.java                 Test.java                        Yylex.java                       parser.java                      
+AbstractVisitor.java             ComposVisitor.class              PrettyPrinter.class              VisitSkel.java                   _cup.cup                         sym.class                        
+Absyn/                           ComposVisitor.java               PrettyPrinter.java               Yylex                            parser$CUP$parser$actions.class  sym.java                         
+AllVisitor.class                 FoldVisitor.class                Test.class                       Yylex.class                      parser.class                     
+[0;34m[/Users/justinbaum/USC/CSCE531/preclass/2.6][0;36m (master)
+[0;37m~/USC/CSCE531/preclass/2.6 $ ls Calc/
+AbstractVisitor.class            AllVisitor.java                  FoldVisitor.java                 Test.java                        Yylex.java                       parser.java                      
+AbstractVisitor.java             ComposVisitor.class              PrettyPrinter.class              VisitSkel.java                   _cup.cup                         sym.class                        
+Absyn/                           ComposVisitor.java               PrettyPrinter.java               Yylex                            parser$CUP$parser$actions.class  sym.java                         
+AllVisitor.class                 FoldVisitor.class                Test.class                       Yylex.class                      parser.class                     
+^C[0;34m[/Users/justinbaum/USC/CSCE531/preclass/2.6][0;36m (master)
+[0;37m~/USC/CSCE531/preclass/2.6 $ echo "3+3" | Calc/Tes[K[K[K[K[K[K[K[Kjava Calc/Test.
+Error: Could not find or load main class Calc.Test.
+Caused by: java.lang.ClassNotFoundException: Calc.Test.
+[0;34m[/Users/justinbaum/USC/CSCE531/preclass/2.6][0;36m (master)
+[0;37m~/USC/CSCE531/preclass/2.6 $ echo "3+3" | java Calc/Test.[K
+
+Parse Succesful!
+
+[Abstract Syntax]
+
+(EAdd (EInt 3) (EInt 3)) 
+
+[Linearized Tree]
+
+3 + 3
+[0;34m[/Users/justinbaum/USC/CSCE531/preclass/2.6][0;36m (master)
+[0;37m~/USC/CSCE531/preclass/2.6 $ echo "3+3" | java Calc/Test[C[1P[1@*[C[1@3[1@+[C[1@3[1@*[1@2
+
+Parse Succesful!
+
+[Abstract Syntax]
+
+(EAdd (EMul (EInt 3) (EInt 3)) (EMul (EInt 3) (EInt 23))) 
+
+[Linearized Tree]
+
+3 * 3 + 3 * 23
+[0;34m[/Users/justinbaum/USC/CSCE531/preclass/2.6][0;36m (master)
+[0;37m~/USC/CSCE531/preclass/2.6 $ exit
+
+Script done on Sat Feb 15 19:06:01 2020
