@@ -1,0 +1,88 @@
+Script started on 2020-02-15 19:08:01-05:00 [TERM="screen-256color" TTY="/dev/pts/1" COLUMNS="238" LINES="62"]
+[0;34m[/home/justin/compiler/preclass/2.6-java][0;36m (master)
+[0;37m~/compiler/preclass/2.6-java $ make distclean
+rm -f Calc/Absyn/Exp.java Calc/Absyn/ESqrt.java Calc/Absyn/EAdd.java Calc/Absyn/ESub.java Calc/Absyn/EMul.java Calc/Absyn/EDiv.java Calc/Absyn/EInt.java Calc/Absyn/Exp.class Calc/Absyn/ESqrt.class Calc/Absyn/EAdd.class Calc/Absyn/ESub.class Calc/Absyn/EMul.class Calc/Absyn/EDiv.class Calc/Absyn/EInt.class
+rm -f Calc/Absyn/*.class
+rmdir Calc/Absyn/
+rm -f Calc/Yylex Calc/Calc.cup Calc/Yylex.java Calc/VisitSkel.java Calc/ComposVisitor.java Calc/AbstractVisitor.java Calc/FoldVisitor.java Calc/AllVisitor.java Calc/PrettyPrinter.java Calc/Skeleton.java Calc/Test.java Calc/sym.java Calc/parser.java Calc/*.class
+rm -f Makefile
+rmdir -p Calc/
+[0;34m[/home/justin/compiler/preclass/2.6-java][0;36m (master)
+[0;37m~/compiler/preclass/2.6-java $ bnfc -m --java Calc.cf 
+
+9 rules accepted
+
+   (Tested with JLex 1.2.6.)
+   (Parser created for category Exp)
+   (Tested with CUP 0.10k)
+writing new file ./Calc/Absyn/Exp.java
+writing new file ./Calc/Absyn/ESqrt.java
+writing new file ./Calc/Absyn/EAdd.java
+writing new file ./Calc/Absyn/ESub.java
+writing new file ./Calc/Absyn/EMul.java
+writing new file ./Calc/Absyn/EDiv.java
+writing new file ./Calc/Absyn/EInt.java
+writing new file ./Calc/PrettyPrinter.java
+writing new file ./Calc/VisitSkel.java
+writing new file ./Calc/ComposVisitor.java
+writing new file ./Calc/AbstractVisitor.java
+writing new file ./Calc/FoldVisitor.java
+writing new file ./Calc/AllVisitor.java
+writing new file ./Calc/Test.java
+writing new file ./Calc/Yylex
+writing new file ./Calc/Calc.cup
+writing new file ./Makefile
+[0;34m[/home/justin/compiler/preclass/2.6-java][0;36m (master)
+[0;37m~/compiler/preclass/2.6-java $ make
+javac -sourcepath . Calc/Absyn/Exp.java Calc/Absyn/ESqrt.java Calc/Absyn/EAdd.java Calc/Absyn/ESub.java Calc/Absyn/EMul.java Calc/Absyn/EDiv.java Calc/Absyn/EInt.java
+java  JLex.Main Calc/Yylex
+Processing first section -- user code.
+Processing second section -- JLex declarations.
+Processing third section -- lexical rules.
+Creating NFA machine representation.
+NFA comprised of 34 states.
+Working on character classes.:::::::.:::
+NFA has 11 distinct character classes.
+Creating DFA transition table.
+Working on DFA states...................
+Minimizing DFA transition table.
+13 states after removal of redundant states.
+Outputting lexical analyzer code.
+java  java_cup.Main -nopositions -expect 100 Calc/Calc.cup
+------- CUP v0.11b 20160615 (GIT 4ac7450) Parser Generation Summary -------
+  0 errors and 0 warnings
+  10 terminals, 3 non-terminals, and 10 productions declared, 
+  producing 20 unique parse states.
+  0 terminals declared but not used.
+  0 non-terminals declared but not used.
+  0 productions never reduced.
+  0 conflicts detected (100 expected).
+  Code written to "parser.java", and "sym.java".
+---------------------------------------------------- (CUP v0.11b 20160615 (GIT 4ac7450))
+mv sym.java parser.java Calc/
+javac -sourcepath . Calc/Yylex.java Calc/sym.java
+Note: Calc/Yylex.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+javac -sourcepath . Calc/PrettyPrinter.java
+javac -sourcepath . Calc/Test.java
+Note: Calc/Test.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+javac -sourcepath . Calc/ComposVisitor.java
+javac -sourcepath . Calc/AbstractVisitor.java
+javac -sourcepath . Calc/FoldVisitor.java
+[0;34m[/home/justin/compiler/preclass/2.6-java][0;36m (master)
+[0;37m~/compiler/preclass/2.6-java $ echo "3+3+5" | java Test[K[K[K[KCalc/.[KTest.[K
+
+Parse Succesful!
+
+[Abstract Syntax]
+
+(EAdd (EAdd (EInt 3) (EInt 3)) (EInt 5)) 
+
+[Linearized Tree]
+
+3 + 3 + 5
+[0;34m[/home/justin/compiler/preclass/2.6-java][0;36m (master)
+[0;37m~/compiler/preclass/2.6-java $ exit
+
+Script done on 2020-02-15 19:10:38-05:00 [COMMAND_EXIT_CODE="0"]

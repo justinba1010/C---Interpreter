@@ -11,6 +11,7 @@ import ParCalc
 import SkelCalc
 import PrintCalc
 import AbsCalc
+import Interpret
 
 
 
@@ -59,16 +60,9 @@ usage = do
     ]
   exitFailure
 
-main :: IO ()
 main = do
-  args <- getArgs
-  case args of
-    ["--help"] -> usage
-    [] -> hGetContents stdin >>= run 2 pExp
-    "-s":fs -> mapM_ (runFile 0 pExp) fs
-    fs -> mapM_ (runFile 2 pExp) fs
+  interact calc
+  putStrLn ""
 
-
-
-
-
+calc s = let Ok e = pExp (myLexer s)
+  in show (eval e)
