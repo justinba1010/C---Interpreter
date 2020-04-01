@@ -1,0 +1,7 @@
+good.cc was correct syntax.
+bad.cc has a type error, and thus cannot be checked to be incorrect at parsing.
+badsyntax_1.cc has to do with a bug in LBNF's terminators and separators. It seems to be explained as "can be considered as a bug"
+badsyntax_2.cc has much to do with the same as badsyntax_1.cc, but it fails the parser. It has a double comma, and fails.
+
+This bug has to do with "accepting a list terminating with a " comma, for multiple arguments in the case of this grammar.
+
