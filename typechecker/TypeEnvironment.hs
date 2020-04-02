@@ -1,76 +1,46 @@
 module TypeEnvironment where
 import AbsCPP 
-import Control.Exception
+import JustinControl
+import qualified Data.Map as Map
 
+--data 
 
-data TypeCheckException
-  = ExitBlockException
-  | UnassignedVariableException
-  | ArithmeticTypeException
-  | AssignmentTypeException
-  | ReassignmentTypeException
-  deriving (Show)
-instance Exception TypeCheckException;
+type Env = (Sig, [Context])
+type Sig = Map.Map Id ([Type], Type)
+type Context = Map.Map Id Type
 
+lookUpVar :: Env -> Id -> Maybe Type
+lookUpVar (_, []) id = Nothing
+lookUpVar (_sig, (currBlock:blocks)) id = Map.lookup id currBlock
 
-data InternalType = TVoid
-  | TString
-  | TDouble
-  | TInt
-  | TBool
-  | TFunc [Type] InternalType
-  deriving (Eq)
+lookUpFunc :: Env -> Id -> Maybe ([Type], Type)
+lookUpFunc (_,[]) id = Nothing
+lookUpFunc (sig, _) id = Map.lookup id sig
 
-type Ident = String;
+updateVar :: Env -> Id -> Type -> Maybe Env
+updateVar env id type_ =
+  let
+    (sig, (currBlock:blocks)) = env
+  in
+    (sig, (Map.insert id type_ currBlock):blocks) |> Just
 
-type Block = [(Ident, InternalType)];
-type Env = [Block];
+updateFun :: Env -> Id -> ([Type], Type) -> Maybe Env
+updateFun env id type_ =
+  let
+    (sig, blocks) = env
+  in
+    ((Map.insert id type_ sig), blocks) |> Just
 
-
-getIdentFromBlock :: Block -> Ident -> Maybe InternalType
-getIdentFromBlock block ident =
-  foldl (\acc x -> case x of
-    (ident_, type_) -> if ident == ident_ then Just type_ else acc)
-    Nothing
-    block;
-
-getIdentFromEntireEnv :: Env -> Ident -> Maybe InternalType
-getIdentFromEntireEnv [] ident = Nothing;
-getIdentFromEmtireEnv (currBlock:env) ident = case getIdentFromBlock currBlock ident of
-  Just type_ -> Just type_
-  Nothing -> getIdentFromEntireEnv env ident;
-
-lookupType :: Env -> Ident -> Maybe InternalType
-lookupType [] ident = Nothing
-lookupType (currBlock:_env) ident = getIdentFromBlock currBlock ident
-
-addToBlock :: Env -> Ident -> InternalType -> Env
-addToBlock (currBlock:env) ident type_ =
-  let x = (ident, type_)
-  in (x:currBlock):env
-
-extendVar :: Env -> Ident -> InternalType -> Env
-extendVar (currBlock:env) ident type_ =
- let identType = getIdentFromBlock currBlock ident 
- in case identType of
-    Just type__ -> throw ReassignmentTypeException
-    Nothing -> addToBlock env ident type_
+copyBlock :: Env -> Env
+copyBlock (sig, []) = (sig, Map.empty:[])
+copyBlock (sig, currBlock:blocks) = (sig, currBlock:currBlock:blocks)
 
 newBlock :: Env -> Env
-newBlock [] = []:[]
-newBlock (currBlock:env) = currBlock:currBlock:env
+newBlock (sig, blocks) = (sig, Map.empty:blocks)
 
-exitBlock :: Env -> Env
-exitBlock [] = throw $ ExitBlockException;
-exitBlock ((_innerBlock):block) = block;
+exitBlock :: Env -> Maybe Env
+exitBlock (sig, []) = Nothing
+exitBlock (sig, currBlock:blocks) = (sig, blocks) |> Just
 
-emptyEnv :: Env
-emptyEnv = []
+emptyEnv = (Map.empty, [])
 
-transformType :: Type -> InternalType
-transformType type_ = case type_ of
-  Type_bool -> TBool
-  Type_int -> TInt
-  Type_double -> TDouble
-  Type_void -> TVoid
-  Type_string -> TString
