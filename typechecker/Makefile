@@ -3,6 +3,9 @@ all:
 	alex -g LexCPP.x
 	ghc --make TestCPP.hs -o TestCPP
 
+typeCheck: all
+	ghc TypeCheck.hs -o TypeChecker
+
 clean:
 	-rm -f *.log *.aux *.hi *.o *.dvi
 
