@@ -48,7 +48,7 @@ showTree v tree
  = do
       putStrV v $ "\n[Abstract Syntax]\n\n" ++ show tree
       putStrV v $ "\n[Linearized tree]\n\n" ++ printTree tree
-      --putStrV v $ "\n[Type Check]\n\n" ++ (if (typeCheck 2 tree) then " Success" else " Failure")
+      --putStrV v $ "\n[Type Check]\n\n" ++ (if (typeCheck tree) then " Success" else " Failure")
 
 usage :: IO ()
 usage = do

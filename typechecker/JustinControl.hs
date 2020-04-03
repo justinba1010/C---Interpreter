@@ -1,10 +1,14 @@
 module JustinControl where
 import AbsCPP
 import Control.Exception
+import ErrM
 
 (|>) x f = f x
-throwIfNothing y x = case x of
-  Just z -> z
-  Nothing -> throw y
+
+errIfNothing s a = case a of
+  Just b -> Ok b
+  _ -> fail s
+
 removeId id = case id of
   Id whatwewant -> whatwewant
+

@@ -5,54 +5,58 @@ import TypeEnvironment
 import Control.Exception
 import Control.Monad
 import JustinControl
+import PrintCPP (printTree)
+import ErrM
 
 -- Not checking type of functions
 -- Will use stacks for environments
-inferBin :: [Type] -> Env -> Exp -> Exp -> Maybe Type
+inferBin :: [Type] -> Env -> Exp -> Exp -> Err Type
 inferBin types env exp1 exp2 = do
   typ <- (inferExp env exp1)
   if elem typ types then
       checkExp env exp2 typ
     else
-      Nothing
+      fail "Not a valid type"
 
-inferExp :: Env -> Exp -> Maybe Type
+inferExp :: Env -> Exp -> Err Type
 inferExp env exp = case exp of
-  ETrue -> Just Type_bool
-  EFalse -> Just Type_bool
-  EInt _integer -> Just Type_bool
-  EDouble _double -> Just Type_bool
-  EString _string -> Just Type_bool
-  EId id -> Just Type_bool
-  EApp id exps -> Just Type_bool
-  EPIncr exp -> Just Type_bool
-  EPDecr exp -> Just Type_bool
-  EIncr exp -> Just Type_bool
-  EDecr exp -> Just Type_bool
-  ETimes exp1 exp2 -> Just Type_bool
-  EDiv exp1 exp2 -> Just Type_bool
-  EPlus exp1 exp2 -> Just Type_bool
-  EMinus exp1 exp2 -> Just Type_bool
-  ELt exp1 exp2 -> Just Type_bool
-  EGt exp1 exp2 -> Just Type_bool
-  ELtEq exp1 exp2 -> Just Type_bool
-  EGtEq exp1 exp2 -> Just Type_bool
-  EEq exp1 exp2 -> Just Type_bool
-  ENEq exp1 exp2 -> Just Type_bool
-  EAnd exp1 exp2 -> Just Type_bool
-  EOr exp1 exp2 -> Just Type_bool
-  EAss exp1 exp2 -> Just Type_bool
-  ETyped exp type_ -> Just Type_bool
+  ETrue -> Ok Type_bool
+  EFalse -> Ok Type_bool
+  EInt _integer -> Ok Type_bool
+  EDouble _double -> Ok Type_bool
+  EString _string -> Ok Type_bool
+  EId id -> Ok Type_bool
+  EApp id exps -> Ok Type_bool
+  EPIncr exp -> Ok Type_bool
+  EPDecr exp -> Ok Type_bool
+  EIncr exp -> Ok Type_bool
+  EDecr exp -> Ok Type_bool
+  ETimes exp1 exp2 -> Ok Type_bool
+  EDiv exp1 exp2 -> Ok Type_bool
+  EPlus exp1 exp2 -> Ok Type_bool
+  EMinus exp1 exp2 -> Ok Type_bool
+  ELt exp1 exp2 -> Ok Type_bool
+  EGt exp1 exp2 -> Ok Type_bool
+  ELtEq exp1 exp2 -> Ok Type_bool
+  EGtEq exp1 exp2 -> Ok Type_bool
+  EEq exp1 exp2 -> Ok Type_bool
+  ENEq exp1 exp2 -> Ok Type_bool
+  EAnd exp1 exp2 -> Ok Type_bool
+  EOr exp1 exp2 -> Ok Type_bool
+  EAss exp1 exp2 -> Ok Type_bool
+  ETyped exp type_ -> Ok Type_bool
 
-checkExp :: Env -> Exp -> Type -> Maybe Type
+checkExp :: Env -> Exp -> Type -> Err Type
 checkExp env exp type_ = do
   type2 <- inferExp env exp
   if (type2 == type_) then
-    Just type2
+    Ok type2
   else
-    Nothing
+    fail ("Type of: " ++ printTree exp ++ "\n" ++
+      "expected: " ++ printTree type2 ++ "\n" ++
+      "but found: " ++ printTree type_)
 
-checkStm :: Env -> Maybe Type -> Stm -> Maybe Env
+checkStm :: Env -> Err Type -> Stm -> Err Env
 checkStm env val x = case x of
   SExp exp -> do
     inferExp env exp
@@ -67,38 +71,38 @@ checkStm env val x = case x of
   SReturn exp -> do
     valtype <- val
     expType <- inferExp env exp
-    (if expType == valtype then env else env) |> Just
-  SReturnVoid -> env |> Just
+    (if expType == valtype then env else env) |> Ok
+  SReturnVoid -> env |> Ok
   SWhile exp stm -> do
     _ <- checkExp env exp Type_bool
     checkStm (copyBlock env) val stm >>= exitBlock
-  SBlock stms -> checkStms (copyBlock env) Nothing stms >>= exitBlock
+  SBlock stms -> checkStms (copyBlock env) (Ok Type_bool) stms >>= exitBlock
   SIfElse exp stm1 stm2 -> do
   _ <- checkExp env exp Type_bool
   checkStm env val stm1 >>= \x -> checkStm x val stm2
 
-checkStms :: Env -> Maybe Type -> [Stm] -> Maybe Env
+checkStms :: Env -> Err Type -> [Stm] -> Err Env
 checkStms env val stms = foldM
   (\env stm ->
     checkStm env val stm
   ) env stms
 
-checkArg :: Env -> Arg -> Maybe Env
+checkArg :: Env -> Arg -> Err Env
 checkArg env arg = case arg of
   ADecl type_ id -> updateVar env id type_
 
-checkArgs :: Env -> [Arg] -> Maybe Env
+checkArgs :: Env -> [Arg] -> Err Env
 checkArgs env args = foldM
   (\env arg ->
     checkArg env arg
   ) env args
 
-checkDef :: Env -> Def -> Maybe Env
+checkDef :: Env -> Def -> Err Env
 checkDef env def = case def of
   DFun type_ id args stms ->
     updateFun env id ([], type_)
     >>= (\env -> checkArgs env args)
-    >>= \x -> checkStms x (Just type_) stms
+    >>= \x -> checkStms x (Ok type_) stms
 
 checkProgram program = case program of
  PDefs defs -> foldM(
@@ -106,6 +110,6 @@ checkProgram program = case program of
     checkDef env def
   ) (emptyEnv |> newBlock) defs
 
-typeCheck _ program = case (checkProgram program) of
-  Just _ -> True
-  Nothing -> False
+typeCheck program = case (checkProgram program) of
+  Ok _ -> True
+  _-> False
