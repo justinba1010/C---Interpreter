@@ -24,7 +24,7 @@ inferExp env exp = case exp of
   EFalse -> Ok Type_bool
   EInt _integer -> Ok Type_bool
   EDouble _double -> Ok Type_bool
-  EString _string -> Ok Type_bool
+  EString _string -> Ok Type_string
   EId id -> Ok Type_bool
   EApp id exps -> Ok Type_bool
   EPIncr exp -> Ok Type_bool
