@@ -10,41 +10,54 @@ import ErrM
 
 -- Not checking type of functions
 -- Will use stacks for environments
+
 inferBin :: [Type] -> Env -> Exp -> Exp -> Err Type
 inferBin types env exp1 exp2 = do
   typ <- (inferExp env exp1)
   if elem typ types then
       checkExp env exp2 typ
     else
-      fail "Not a valid type"
+      fail $ "This expression: " ++ printTree exp1 ++ " has type: " ++ show typ ++ "\n does not match this expression: " ++ printTree exp2 ++ "  which has type: " ++ getWithErrString (inferExp env exp2) ++ "\n can only have types of: " ++ show types
 
 inferExp :: Env -> Exp -> Err Type
 inferExp env exp = case exp of
   ETrue -> Ok Type_bool
   EFalse -> Ok Type_bool
-  EInt _integer -> Ok Type_bool
-  EDouble _double -> Ok Type_bool
+  EInt _integer -> Ok Type_int
+  EDouble _double -> Ok Type_double
   EString _string -> Ok Type_string
-  EId id -> Ok Type_bool
-  EApp id exps -> Ok Type_bool
-  EPIncr exp -> Ok Type_bool
-  EPDecr exp -> Ok Type_bool
-  EIncr exp -> Ok Type_bool
-  EDecr exp -> Ok Type_bool
-  ETimes exp1 exp2 -> Ok Type_bool
-  EDiv exp1 exp2 -> Ok Type_bool
-  EPlus exp1 exp2 -> Ok Type_bool
-  EMinus exp1 exp2 -> Ok Type_bool
-  ELt exp1 exp2 -> Ok Type_bool
-  EGt exp1 exp2 -> Ok Type_bool
-  ELtEq exp1 exp2 -> Ok Type_bool
-  EGtEq exp1 exp2 -> Ok Type_bool
-  EEq exp1 exp2 -> Ok Type_bool
-  ENEq exp1 exp2 -> Ok Type_bool
-  EAnd exp1 exp2 -> Ok Type_bool
-  EOr exp1 exp2 -> Ok Type_bool
-  EAss exp1 exp2 -> Ok Type_bool
-  ETyped exp type_ -> Ok Type_bool
+  EId id -> lookUpVar env id
+  EApp id exps -> Ok Type_void -- Need to change
+    -- Check if declared in signatures not variables(maybe variables)
+    --lookUpVar env id
+  EPIncr exp -> checkExpIn env exp [Type_void]
+  EPDecr exp -> checkExpIn env exp [Type_void] 
+  EIncr exp -> checkExpIn env exp [Type_int]
+  EDecr exp -> checkExpIn env exp [Type_int]
+  ETimes exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
+  EDiv exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
+  EPlus exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2 
+  EMinus exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
+  ELt exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
+  EGt exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
+  ELtEq exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
+  EGtEq exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
+  EEq exp1 exp2 -> inferBin [Type_int, Type_double, Type_string] env exp1 exp2
+  ENEq exp1 exp2 -> inferBin [Type_int, Type_double, Type_string] env exp1 exp2
+  EAnd exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
+  EOr exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
+  EAss exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
+  ETyped exp type_ ->
+    -- Fix this as well
+    Ok Type_bool
+
+checkExpIn :: Env -> Exp -> [Type] -> Err Type
+checkExpIn env exp types = do
+  type_ <- inferExp env exp
+  if (elem type_ types) then
+    Ok type_
+  else Bad $ "Expected: " ++ (show types) ++ "\nreceived: " ++ (show type_)
+
 
 checkExp :: Env -> Exp -> Type -> Err Type
 checkExp env exp type_ = do
@@ -53,8 +66,8 @@ checkExp env exp type_ = do
     Ok type2
   else
     fail ("Type of: " ++ printTree exp ++ "\n" ++
-      "expected: " ++ printTree type2 ++ "\n" ++
-      "but found: " ++ printTree type_)
+      "expected: " ++ printTree type_ ++ "\n" ++
+      "but found: " ++ printTree type2)
 
 checkStm :: Env -> Err Type -> Stm -> Err Env
 checkStm env val x = case x of
@@ -71,7 +84,7 @@ checkStm env val x = case x of
   SReturn exp -> do
     valtype <- val
     expType <- inferExp env exp
-    (if expType == valtype then env else env) |> Ok
+    (if expType == valtype then Ok env else Bad $ "Expecting " ++ show valtype ++ " but received " ++ show expType)
   SReturnVoid -> env |> Ok
   SWhile exp stm -> do
     _ <- checkExp env exp Type_bool

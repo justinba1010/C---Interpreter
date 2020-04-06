@@ -12,3 +12,6 @@ errIfNothing s a = case a of
 removeId id = case id of
   Id whatwewant -> whatwewant
 
+getWithErrString x = case x of
+  Ok t -> show t
+  Bad s -> s
