@@ -1,12 +1,15 @@
-all:
+TestCPP:
 	happy -gca ParCPP.y
 	alex -g LexCPP.x
 	ghc --make TestCPP.hs -o TestCPP
 
-test: typeCheck
+lab2-testsuite:
+	tar -xzf lab2-testsuite.tar.gz
+
+test: typeChecker
 	bash ./tests.sh auto
 
-typeCheck: all
+typeChecker: TestCPP lab2-testsuite
 	ghc TypeCheck.hs -o TypeChecker
 
 clean:
