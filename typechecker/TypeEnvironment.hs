@@ -14,16 +14,19 @@ lookUpVar :: Env -> Id -> Err Type
 lookUpVar (_, []) id = fail "Blank"
 lookUpVar (_sig, (currBlock:blocks)) id = Map.lookup id currBlock |> errIfNothing "Type not defined"
 
+defaultFunctions = [(Id "printInt", ([Type_int], Type_void))] |> Map.fromList
 lookUpFunc :: Env -> Id -> Err ([Type], Type)
 lookUpFunc (_,[]) id = fail "Blank"
-lookUpFunc (sig, _) id = Map.lookup id sig |> errIfNothing "Type not defined"
+lookUpFunc (sig, _) id = case Map.lookup id defaultFunctions of 
+  Just x -> Ok x
+  _ -> Map.lookup id sig |> errIfNothing "function not defined"
 
 updateVar :: Env -> Id -> Type -> Err Env
 updateVar env id type_ =
   let
     (sig, (currBlock:blocks)) = env
   in
-    (sig, (Map.insert id type_ currBlock):blocks) |> Ok
+    if Map.member id currBlock then Bad $ "There is a redeclaration of: " ++ (removeId id) ++ "." else (sig, (Map.insert id type_ currBlock):blocks) |> Ok
 
 updateFun :: Env -> Id -> ([Type], Type) -> Err Env
 updateFun env id type_ =

@@ -27,9 +27,15 @@ inferExp env exp = case exp of
   EDouble _double -> Ok Type_double
   EString _string -> Ok Type_string
   EId id -> lookUpVar env id
-  EApp id exps -> Ok Type_void -- Need to change
-    -- Check if declared in signatures not variables(maybe variables)
-    --lookUpVar env id
+  EApp id exps ->
+    do
+      (types, type_) <- lookUpFunc env id
+      zipped <- zipWithError exps types (removeId id)
+      foldM
+        (\env signature ->
+         let (exp, type_) = signature in
+          okSwap (checkExp env exp type_) env 
+        ) env zipped `okSwap` type_
   EPIncr exp -> checkExpIn env exp [Type_void]
   EPDecr exp -> checkExpIn env exp [Type_void] 
   EIncr exp -> checkExpIn env exp [Type_int]
@@ -79,7 +85,8 @@ checkStm env val x = case x of
       (\env id ->
         updateVar env id typ
       ) env ids
-  SInit type_ id exp ->
+  SInit type_ id exp -> do
+    checkExp env exp type_
     updateVar env id type_
   SReturn exp -> do
     valtype <- val
@@ -110,17 +117,24 @@ checkArgs env args = foldM
     checkArg env arg
   ) env args
 
+argsToTypes :: [Arg] -> [Type]
+argsToTypes args = map
+  (\x -> case x of
+    ADecl type_ _id -> type_)
+    args
+
 checkDef :: Env -> Def -> Err Env
 checkDef env def = case def of
   DFun type_ id args stms ->
-    updateFun env id ([], type_)
+    updateFun env id (argsToTypes args, type_)
     >>= (\env -> checkArgs env args)
     >>= \x -> checkStms x (Ok type_) stms
+    >>= \x -> exitBlock x
 
 checkProgram program = case program of
  PDefs defs -> foldM(
   \env def ->
-    checkDef env def
+    checkDef (newBlock env) def
   ) (emptyEnv |> newBlock) defs
 
 typeCheck program = case (checkProgram program) of

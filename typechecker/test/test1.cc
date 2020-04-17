@@ -7,7 +7,7 @@ int snd (int x, int y) {
 }
 int main () {
  int x = 0;
- int r = snd(1,x);
+ int r = snd(1,x,x);
  printInt(r); // Should print 0
  return r;
 }

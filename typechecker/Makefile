@@ -4,7 +4,7 @@ all:
 	ghc --make TestCPP.hs -o TestCPP
 
 test: typeCheck
-	. ./tests.sh
+	bash ./tests.sh auto
 
 typeCheck: all
 	ghc TypeCheck.hs -o TypeChecker
