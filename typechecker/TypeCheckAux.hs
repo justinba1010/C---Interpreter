@@ -11,6 +11,11 @@ import ErrM
 -- Not checking type of functions
 -- Will use stacks for environments
 
+retType :: Err Type -> Type -> Err Type
+retType original supposed = case original of
+  Ok _ -> return supposed
+  Bad _ -> original
+
 inferBin :: [Type] -> Env -> Exp -> Exp -> Err Type
 inferBin types env exp1 exp2 = do
   typ <- (inferExp env exp1)
@@ -36,25 +41,28 @@ inferExp env exp = case exp of
          let (exp, type_) = signature in
           okSwap (checkExp env exp type_) env 
         ) env zipped `okSwap` type_
-  EPIncr exp -> checkExpIn env exp [Type_void]
-  EPDecr exp -> checkExpIn env exp [Type_void] 
+  EPIncr exp -> checkExpIn env exp [Type_int]
+  EPDecr exp -> checkExpIn env exp [Type_int] 
   EIncr exp -> checkExpIn env exp [Type_int]
   EDecr exp -> checkExpIn env exp [Type_int]
   ETimes exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
   EDiv exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
   EPlus exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2 
   EMinus exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
-  ELt exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
-  EGt exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
-  ELtEq exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
-  EGtEq exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
-  EEq exp1 exp2 -> inferBin [Type_int, Type_double, Type_string] env exp1 exp2
-  ENEq exp1 exp2 -> inferBin [Type_int, Type_double, Type_string] env exp1 exp2
-  EAnd exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
-  EOr exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
-  EAss exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
+  ELt exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2 >> Ok Type_bool
+  EGt exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2 >> Ok Type_bool
+  ELtEq exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2 >> Ok Type_bool
+  EGtEq exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2 >> Ok Type_bool
+  EEq exp1 exp2 -> inferBin [Type_int, Type_double, Type_string, Type_bool] env exp1 exp2 >> Ok Type_bool
+  ENEq exp1 exp2 -> inferBin [Type_int, Type_double, Type_string, Type_bool] env exp1 exp2 >> Ok Type_bool
+  EAnd exp1 exp2 -> inferBin [Type_bool] env exp1 exp2 >> Ok Type_bool
+  EOr exp1 exp2 -> inferBin [Type_bool] env exp1 exp2 >> Ok Type_bool
+  EAss exp1 exp2 -> do
+    type_ <- inferExp env exp1
+    checkExp env exp2 type_
+    return type_
   ETyped exp type_ ->
-    -- Fix this as well
+    -- No annotations atm
     Ok Type_bool
 
 checkExpIn :: Env -> Exp -> [Type] -> Err Type
@@ -99,7 +107,7 @@ checkStm env val x = case x of
   SBlock stms -> checkStms (copyBlock env) (Ok Type_bool) stms >>= exitBlock
   SIfElse exp stm1 stm2 -> do
   _ <- checkExp env exp Type_bool
-  checkStm env val stm1 >>= \x -> checkStm x val stm2
+  checkStm (newBlock env) val stm1 >>= exitBlock >>= \x -> checkStm (newBlock env) val stm2 >>= exitBlock
 
 checkStms :: Env -> Err Type -> [Stm] -> Err Env
 checkStms env val stms = foldM

@@ -3,7 +3,7 @@
 for i in test/*; do
   echo "Testing file: $i"
   echo "-----------"
-  (command -v pygmentize > /dev/null 2>&1 && pygmentize -g -O style=colorful,linenos=1 $i) || cat $i
+  ([[ $2 == "ccat" ]] && command -v pygmentize > /dev/null 2>&1 && pygmentize -g -O style=colorful,linenos=1 $i) || cat $i
   echo
   echo
   ./TypeChecker $i
@@ -21,7 +21,7 @@ done
 for i in lab2-testsuite/good/*.cc; do
   echo "Testing file: $i"
   echo "-----------"
-  (command -v pygmentize > /dev/null 2>&1 && pygmentize -g -O style=colorful,linenos=1 $i) || cat $i
+  ([[ $2 == "ccat" ]] && command -v pygmentize > /dev/null 2>&1 && pygmentize -g -O style=colorful,linenos=1 $i) || cat $i
   echo
   echo
   ./TypeChecker $i
@@ -45,7 +45,7 @@ done
 for i in lab2-testsuite/bad/*.cc; do
   echo "Testing file: $i"
   echo "-----------"
-  (command -v pygmentize > /dev/null 2>&1 && pygmentize -g -O style=colorful,linenos=1 $i) || cat $i
+  ([[ $2 == "ccat" ]] && command -v pygmentize > /dev/null 2>&1 && pygmentize -g -O style=colorful,linenos=1 $i) || cat $i
   echo
   echo
   ./TypeChecker $i
