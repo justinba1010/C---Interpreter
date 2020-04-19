@@ -8,14 +8,6 @@ import JustinControl
 import PrintCPP (printTree)
 import ErrM
 
--- Not checking type of functions
--- Will use stacks for environments
-
-retType :: Err Type -> Type -> Err Type
-retType original supposed = case original of
-  Ok _ -> return supposed
-  Bad _ -> original
-
 inferBin :: [Type] -> Env -> Exp -> Exp -> Err Type
 inferBin types env exp1 exp2 = do
   typ <- (inferExp env exp1)
@@ -40,11 +32,11 @@ inferExp env exp = case exp of
         (\env signature ->
          let (exp, type_) = signature in
           okSwap (checkExp env exp type_) env 
-        ) env zipped `okSwap` type_
-  EPIncr exp -> checkExpIn env exp [Type_int]
-  EPDecr exp -> checkExpIn env exp [Type_int] 
-  EIncr exp -> checkExpIn env exp [Type_int]
-  EDecr exp -> checkExpIn env exp [Type_int]
+        ) env zipped >> Ok type_
+  EPIncr exp -> checkExpIn env exp [Type_int, Type_double]
+  EPDecr exp -> checkExpIn env exp [Type_int, Type_double] 
+  EIncr exp -> checkExpIn env exp [Type_int, Type_double]
+  EDecr exp -> checkExpIn env exp [Type_int, Type_double]
   ETimes exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
   EDiv exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
   EPlus exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2 
@@ -99,12 +91,14 @@ checkStm env val x = case x of
   SReturn exp -> do
     valtype <- val
     expType <- inferExp env exp
-    (if expType == valtype then Ok env else Bad $ "Expecting " ++ show valtype ++ " but received " ++ show expType)
-  SReturnVoid -> env |> Ok
+    (if expType == valtype then Ok env else Bad $ "Expecting a return: " ++ show valtype ++ " but received " ++ show expType)
+  SReturnVoid -> do
+    valtype <- val
+    (if valtype == Type_void then Ok env else Bad $ "Expecting a return: " ++ show valtype ++ " but received void")
   SWhile exp stm -> do
     _ <- checkExp env exp Type_bool
-    checkStm (copyBlock env) val stm >>= exitBlock
-  SBlock stms -> checkStms (copyBlock env) (Ok Type_bool) stms >>= exitBlock
+    checkStm (newBlock env) val stm >>= exitBlock
+  SBlock stms -> checkStms (newBlock env) (val) stms >>= exitBlock
   SIfElse exp stm1 stm2 -> do
   _ <- checkExp env exp Type_bool
   checkStm (newBlock env) val stm1 >>= exitBlock >>= \x -> checkStm (newBlock env) val stm2 >>= exitBlock
@@ -131,19 +125,31 @@ argsToTypes args = map
     ADecl type_ _id -> type_)
     args
 
+loadDef :: Env -> Def -> Err Env
+loadDef env def = case def of
+  DFun type_ id args _stms ->
+    updateFun env id (argsToTypes args, type_)
+
+loadDefs :: [Def] -> Err Env
+loadDefs defs = foldM(
+  \env def ->
+    loadDef env def
+    ) (emptyEnv |> newBlock) defs 
+
 checkDef :: Env -> Def -> Err Env
 checkDef env def = case def of
   DFun type_ id args stms ->
-    updateFun env id (argsToTypes args, type_)
-    >>= (\env -> checkArgs env args)
+    checkArgs env args
     >>= \x -> checkStms x (Ok type_) stms
     >>= \x -> exitBlock x
 
 checkProgram program = case program of
- PDefs defs -> foldM(
-  \env def ->
-    checkDef (newBlock env) def
-  ) (emptyEnv |> newBlock) defs
+  PDefs [] -> Bad "Empty program :("
+  PDefs defs -> 
+    loadDefs defs >>= \env -> foldM(
+      \env def ->
+        checkDef (newBlock env) def
+    ) (env) defs
 
 typeCheck program = case (checkProgram program) of
   Ok _ -> True
