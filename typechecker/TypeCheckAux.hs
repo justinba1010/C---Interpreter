@@ -134,7 +134,7 @@ loadDefs :: [Def] -> Err Env
 loadDefs defs = foldM(
   \env def ->
     loadDef env def
-    ) (emptyEnv |> newBlock) defs 
+    ) (emptyEnv) defs 
 
 checkDef :: Env -> Def -> Err Env
 checkDef env def = case def of

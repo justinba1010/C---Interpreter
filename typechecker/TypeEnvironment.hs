@@ -20,7 +20,8 @@ lookUpVar (_sig, (currBlock:blocks)) id = case Map.lookup id currBlock of
 defaultFunctions = [
   (Id "printInt", ([Type_int], Type_void)),
   (Id "readInt", ([], Type_int)),
-  (Id "printDouble", ([Type_double], Type_void))
+  (Id "printDouble", ([Type_double], Type_void)),
+  (Id "readDouble", ([], Type_double))
   ] |> Map.fromList
 
 lookUpFunc :: Env -> Id -> Err ([Type], Type)
