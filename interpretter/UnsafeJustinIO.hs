@@ -1,13 +1,12 @@
 module UnsafeJustinIO where
-import System.IO.Unsafe
-
+import Data.Text.Unsafe
 -- If a `*** Exception: read: no parse` shows up, this is where it was thrown
 
-printInt int = unsafePerformIO $ putStrLn (show int)
+printInt int = unsafeDupablePerformIO $ putStrLn (show int)
 
-readInt () = (read (unsafePerformIO $ getLine) :: Int)
+readInt () = (read (unsafeDupablePerformIO $ getLine) :: Int)
 
-printDouble double = unsafePerformIO $ putStrLn (show double)
+printDouble double = unsafeDupablePerformIO $ putStrLn (show double)
 
-readDouble () = (read (unsafePerformIO $ getLine) :: Double)
+readDouble () = (read (unsafeDupablePerformIO $ getLine) :: Double)
 

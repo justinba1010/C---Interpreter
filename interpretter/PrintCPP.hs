@@ -163,11 +163,6 @@ instance Print AbsCPP.Exp where
     AbsCPP.EOr exp1 exp2 -> prPrec i 3 (concatD [prt 3 exp1, doc (showString "||"), prt 4 exp2])
     AbsCPP.EAss exp1 exp2 -> prPrec i 2 (concatD [prt 3 exp1, doc (showString "="), prt 2 exp2])
     AbsCPP.ETyped exp type_ -> prPrec i 15 (concatD [doc (showString "("), prt 0 exp, doc (showString ":"), prt 0 type_, doc (showString ")")])
-    AbsCPP.VInteger n -> prPrec i 15 (concatD [prt 0 n])
-    AbsCPP.VDouble d -> prPrec i 15 (concatD [prt 0 d])
-    AbsCPP.VString str -> prPrec i 15 (concatD [prt 0 str])
-    AbsCPP.VVoid -> prPrec i 15 (concatD [])
-    AbsCPP.VUndefined -> prPrec i 15 (concatD [])
   prtList _ [] = concatD []
   prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]

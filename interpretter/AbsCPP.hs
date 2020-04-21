@@ -56,11 +56,6 @@ data Exp
     | EOr Exp Exp
     | EAss Exp Exp
     | ETyped Exp Type
-    | VInteger Integer
-    | VDouble Double
-    | VString String
-    | VVoid
-    | VUndefined
   deriving (Eq, Ord, Show, Read)
 
 data Type

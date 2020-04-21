@@ -62,11 +62,6 @@ transExp x = case x of
   EOr exp1 exp2 -> failure x
   EAss exp1 exp2 -> failure x
   ETyped exp type_ -> failure x
-  VInteger integer -> failure x
-  VDouble double -> failure x
-  VString string -> failure x
-  VVoid -> failure x
-  VUndefined -> failure x
 transType :: Type -> Result
 transType x = case x of
   Type_bool -> failure x

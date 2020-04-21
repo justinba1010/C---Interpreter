@@ -53,11 +53,6 @@ EOr.     Exp3   ::= Exp3  "||" Exp4 ;
 EAss.    Exp2   ::= Exp3 "=" Exp2 ;
 
 internal ETyped. Exp15 ::= "(" Exp ":" Type ")" ;
-internal VInteger. Exp15 ::= Integer;
-internal VDouble. Exp15 ::= Double;
-internal VString. Exp15 ::= String;
-internal VVoid. Exp15 ::= ;
-internal VUndefined. Exp15 ::= ;
 
 coercions Exp 15 ;
 

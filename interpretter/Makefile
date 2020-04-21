@@ -9,8 +9,8 @@ lab2-testsuite:
 #test: typeChecker
 	#bash ./tests.sh auto
 
-#typeChecker: TestCPP lab2-testsuite
-	#ghc TypeCheck.hs -o TypeChecker
+Interpret: TestCPP Interpret.hs Interpretter.hs
+	ghc Interpret.hs
 
 clean:
 	-rm -f *.log *.aux *.hi *.o *.dvi
