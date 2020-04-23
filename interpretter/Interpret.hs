@@ -13,26 +13,26 @@ import qualified Interpretter
 import ErrM
 import System.Environment   
 import System.Exit
+import InterpretterEnvironment
 
 messageAndExit exitCode message = do putStr (message ++ "\n")
                                      exitWith (exitCode)
+
+interpret :: Env -> [Token] -> Err (Program, Env)
+interpret env tokens =
+  case pProgram tokens of
+    Ok program -> Ok (program, emptyEnv)
+    Bad error -> Bad error 
 
 main = do
   args <- getArgs
   if (length args > 0) then do
     s <- readFile $ args !! 0
     case Interpretter.runProgram =<< (pProgram $ myLexer s) of
-      Ok env -> messageAndExit (ExitFailure 1) "Failure"
-      Bad s -> (case s of
-        ('I':'N':'T':'E':'R':'N':'A':'L':'V':'A':'L':'U':'E':':':' ':x) ->
-          (case x of
-            ('V':'I':'n':'t':y) ->
-              (case (read y :: Int) of
-                0 -> messageAndExit (ExitSuccess) ""
-                z -> messageAndExit (ExitFailure z) (s ++ ""))
-            _ ->  messageAndExit (ExitFailure 1) s
-            )
-        _ -> messageAndExit (ExitFailure 1) s
-        )
-    else messageAndExit (ExitFailure 2) "Enter a filename after call, like:\n$ ./TypeCheck file.c"
+      Ok (_ftable, _context, VInt x, prints) -> messageAndExit (case x of
+        0 -> ExitSuccess
+        _ -> ExitFailure (1)) (foldl (\acc x -> acc ++"\n"++x) "" (reverse prints))
+      Bad s -> messageAndExit (ExitFailure 1) s
+  else
+    messageAndExit (ExitFailure 255) "Please put in a filename"
 

@@ -23,8 +23,8 @@ evalExps (exp:exps) vals env = case interpretExp exp env of
   Bad s -> Bad s
 
 addArgumentsToEnv [] [] env = Ok env
-addArgumentsToEnv (_) [] env = Bad $ "Not enough arguments"
-addArgumentsToEnv [] _ env = Bad $ "Not enough arguments"
+addArgumentsToEnv (_) [] env = Bad $ "TYPE ERROR:Not enough arguments"
+addArgumentsToEnv [] _ env = Bad $ "TYPE ERROR:Not enough arguments"
 addArgumentsToEnv (val:vals) (arg:args) env = case arg of
   ADecl type_ id ->
     case (type_, val) of
@@ -32,6 +32,7 @@ addArgumentsToEnv (val:vals) (arg:args) env = case arg of
       (Type_int, VInt x) ->initializeVar id val env >>= addArgumentsToEnv vals args
       (Type_string, VString x) ->initializeVar id val env >>= addArgumentsToEnv vals args
       (Type_double, VDouble x) ->initializeVar id val env >>= addArgumentsToEnv vals args
+      _ -> "TYPE ERROR: return wrong type" |> Bad
 
 type InterpretReturn = Err (Value, Env)
 
@@ -43,6 +44,8 @@ getEnvFromIR interpretReturn = case interpretReturn of
 
 interpretExp :: Exp -> Env -> InterpretReturn
 interpretExp exp env = case exp of
+  SReadInt -> Ok (VInt $ readInt (), env)
+  SReadDouble -> Ok (VDouble $ readDouble (), env)
   ETrue -> Ok (VBool True, env)
   EFalse -> Ok (VBool False, env)
   EInt int -> Ok (VInt int, env)
@@ -56,16 +59,8 @@ interpretExp exp env = case exp of
     (vals, env1) <- evalExps exps [] env
     newEnv <- addArgumentsToEnv vals args (newEnv env |> newBlock)
     case interpretStms stms type_ newEnv of
-      Ok _ -> Bad $ "No return"
-      Bad s -> case s of
-        ('I':'N':'T':'E':'R':'N':'A':'L':'V':'A':'L':'U':'E':':':' ':x) ->
-          (case x of
-            ('V':'I':'n':'t':y) -> Ok (VInt (read y :: Integer), env1)
-            ('V':'D':'o':'u':'b':'l':'e':y) -> Ok (VDouble (read y :: Double), env1)
-            ('V':'S':'t':'r':'i':'n':'g':y) -> Ok (VString y, env1)
-            ('V':'B':'o':'o':'l':y) -> Ok (VBool (read y :: Bool), env1)
-            _ -> Bad $ "Something went very wrong" ++ x)
-
+      Ok newnewEnv -> Ok (getReturnVal newnewEnv, addPrints env1 newnewEnv)
+      Bad s -> Bad s
   EPIncr (EId (id)) -> do -- Post
     (value, env1) <- interpretExp (EId (id)) env
     case (value) of
@@ -108,56 +103,56 @@ interpretExp exp env = case exp of
     case (val1, val2) of
       (VInt x, VInt y) -> Ok (VInt (x*y), env2)
       (VDouble x, VDouble y) -> Ok (VDouble (x*y), env2)
-      _ -> Bad $ "Mismatched or incorrect types for operation (*)" ++ (show exp1) ++ " and " ++ (show exp2)
+      _ -> Bad $ "TYPE ERROR:Mismatched or incorrect types for operation (*)" ++ (show exp1) ++ " and " ++ (show exp2)
   EDiv exp1 exp2 -> do
     (val1, env1) <- interpretExp exp1 env
     (val2, env2) <- interpretExp exp2 env1
     case (val1, val2) of
       (VInt x, VInt y) -> Ok (VInt (div x y), env2)
       (VDouble x, VDouble y) -> Ok (VDouble (x/y), env2)
-      _ -> Bad $ "Mismatched or incorrect types for operation (/)" ++ (show exp1) ++ " and " ++ (show exp2)
+      _ -> Bad $ "TYPE ERROR:Mismatched or incorrect types for operation (/)" ++ (show exp1) ++ " and " ++ (show exp2)
   EPlus exp1 exp2 -> do
     (val1, env1) <- interpretExp exp1 env
     (val2, env2) <- interpretExp exp2 env1
     case (val1, val2) of
       (VInt x, VInt y) -> Ok (VInt (x+y), env2)
       (VDouble x, VDouble y) -> Ok (VDouble (x+y), env2)
-      _ -> Bad $ "Mismatched or incorrect types for operation (+)" ++ (show exp1) ++ " and " ++ (show exp2)
+      _ -> Bad $ "TYPE ERROR:Mismatched or incorrect types for operation (+)" ++ (show exp1) ++ " and " ++ (show exp2)
   EMinus exp1 exp2 -> do
     (val1, env1) <- interpretExp exp1 env
     (val2, env2) <- interpretExp exp2 env1
     case (val1, val2) of
       (VInt x, VInt y) -> Ok (VInt (x-y), env2)
       (VDouble x, VDouble y) -> Ok (VDouble (x-y), env2)
-      _ -> Bad $ "Mismatched or incorrect types for operation (-)" ++ (show exp1) ++ " and " ++ (show exp2)
+      _ -> Bad $ "TYPE ERROR:Mismatched or incorrect types for operation (-)" ++ (show exp1) ++ " and " ++ (show exp2)
   ELt exp1 exp2 -> do
     (val1, env1) <- interpretExp exp1 env
     (val2, env2) <- interpretExp exp2 env1
     case (val1, val2) of
       (VInt x, VInt y) -> Ok (VBool (x < y), env2)
       (VDouble x, VDouble y) -> Ok(VBool (x < y), env2)
-      _ -> Bad $ "Mismatched or incorrect types for operation (<)" ++ (show exp1) ++ " and " ++ (show exp2)
+      _ -> Bad $ "TYPE ERROR:Mismatched or incorrect types for operation (<)" ++ (show exp1) ++ " and " ++ (show exp2)
   EGt exp1 exp2 -> do
     (val1, env1) <- interpretExp exp1 env
     (val2, env2) <- interpretExp exp2 env1
     case (val1, val2) of
       (VInt x, VInt y) -> Ok (VBool (x > y), env2)
       (VDouble x, VDouble y) -> Ok (VBool (x > y), env2)
-      _ -> Bad $ "Mismatched or incorrect types for operation (>)" ++ (show exp1) ++ " and " ++ (show exp2)
+      _ -> Bad $ "TYPE ERROR:Mismatched or incorrect types for operation (>)" ++ (show exp1) ++ " and " ++ (show exp2)
   ELtEq exp1 exp2 -> do
     (val1, env1) <- interpretExp exp1 env
     (val2, env2) <- interpretExp exp2 env1
     case (val1, val2) of
       (VInt x, VInt y) -> Ok (VBool (x <= y), env2)
       (VDouble x, VDouble y) -> Ok (VBool (x <= y), env2)
-      _ -> Bad $ "Mismatched or incorrect types for operation (<=)" ++ (show exp1) ++ " and " ++ (show exp2)
+      _ -> Bad $ "TYPE ERROR:Mismatched or incorrect types for operation (<=)" ++ (show exp1) ++ " and " ++ (show exp2)
   EGtEq exp1 exp2 -> do
     (val1, env1) <- interpretExp exp1 env
     (val2, env2) <- interpretExp exp2 env1
     case (val1, val2) of
       (VInt x, VInt y) -> Ok (VBool (x >= y), env2)
       (VDouble x, VDouble y) -> Ok (VBool (x >= y), env2)
-      _ -> Bad $ "Mismatched or incorrect types for operation (>=)" ++ (show exp1) ++ " and " ++ (show exp2)
+      _ -> Bad $ "TYPE ERROR:Mismatched or incorrect types for operation (>=)" ++ (show exp1) ++ " and " ++ (show exp2)
   EEq exp1 exp2 -> do
     (val1, env1) <- interpretExp exp1 env
     (val2, env2) <- interpretExp exp2 env1
@@ -166,7 +161,7 @@ interpretExp exp env = case exp of
       (VDouble x, VDouble y) -> Ok (VBool (x == y), env2)
       (VBool x, VBool y) -> Ok (VBool (x==y), env2)
       (VString x, VString y) -> Ok (VBool (x==y), env2)
-      _ -> Bad $ "Mismatched or incorrect types for operation (==)" ++ (show exp1) ++ " and " ++ (show exp2)
+      _ -> Bad $ "TYPE ERROR:Mismatched or incorrect types for operation (==)" ++ (show exp1) ++ " and " ++ (show exp2)
   ENEq exp1 exp2 -> do
     (val1, env1) <- interpretExp exp1 env
     (val2, env2) <- interpretExp exp2 env1
@@ -175,19 +170,19 @@ interpretExp exp env = case exp of
       (VDouble x, VDouble y) -> Ok (VBool (x /= y), env2)
       (VBool x, VBool y) -> Ok (VBool (x/=y), env2)
       (VString x, VString y) -> Ok (VBool (x/=y), env2)
-      _ -> Bad $ "Mismatched or incorrect types for operation (!=)" ++ (show exp1) ++ " and " ++ (show exp2)
+      _ -> Bad $ "TYPE ERROR:Mismatched or incorrect types for operation (!=)" ++ (show exp1) ++ " and " ++ (show exp2)
   EAnd exp1 exp2 -> do
     (val1, env1) <- interpretExp exp1 env
     (val2, env2) <- interpretExp exp2 env1
     case (val1, val2) of
       (VBool x, VBool y) -> Ok (VBool (x && y), env2)
-      _ -> Bad $ "Mismatched or incorrect types for operation (&&)" ++ (show exp1) ++ " and " ++ (show exp2)
+      _ -> Bad $ "TYPE ERROR:Mismatched or incorrect types for operation (&&)" ++ (show exp1) ++ " and " ++ (show exp2)
   EOr exp1 exp2 -> do
     (val1, env1) <- interpretExp exp1 env
     (val2, env2) <- interpretExp exp2 env1
     case (val1, val2) of
       (VBool x, VBool y) -> Ok (VBool (x || y), env2)
-      _ -> Bad $ "Mismatched or incorrect types for operation (||)" ++ (show exp1) ++ " and " ++ (show exp2)
+      _ -> Bad $ "TYPE ERROR:Mismatched or incorrect types for operation (||)" ++ (show exp1) ++ " and " ++ (show exp2)
   EAss (EId id) exp2 -> do
     (val1, env1) <- interpretExp exp2 env
     val2 <- lookUpVar (id) env1
@@ -208,11 +203,11 @@ interpretExp exp env = case exp of
         updateVar (id) val1 env1 >>= (\y -> Ok (VString x, y))
       (VString _, VString x) ->
         updateVar (id) val1 env1 >>= (\y -> Ok (VString x, y))
-      _ -> Bad $ "Mismatched or incorrect types for assignment " ++ show(id) ++ " = " ++ (show exp2)
-  EAss exp1 exp2 -> Bad $ "Cannot assign an expression a value at this time: " ++ (show exp1) ++ " = " ++ (show exp2)
+      _ -> Bad $ "TYPE ERROR:Mismatched or incorrect types for assignment " ++ show(id) ++ " = " ++ (show exp2)
+  EAss exp1 exp2 -> Bad $ "TYPE ERROR:Cannot assign an expression a value at this time: " ++ (show exp1) ++ " = " ++ (show exp2)
 
 interpretStm :: Type -> Stm -> Env -> Err Env
-interpretStm type_ stm env = case stm of
+interpretStm type_ stm env = if isReturned env then Ok env else case stm of
   SExp exp -> getEnvFromIR $ interpretExp exp env
   SDecls typ ids ->
     foldM (\env id ->
@@ -226,50 +221,40 @@ interpretStm type_ stm env = case stm of
     ) env ids
   SInit type_ id exp -> do
     (val, env1) <- interpretExp exp env 
-    initializeVar id (
-      case (val, type_) of
-        (VInt x, Type_int) -> VInt x
-        (VDouble x, Type_double) -> VDouble x
-        (VString x, Type_string) -> VString x
-        (VBool x, Type_bool) -> VBool x
-      ) env1
+    (case (val, type_) of
+      (VInt x, Type_int) -> initializeVar id (VInt x) env1
+      (VDouble x, Type_double) -> initializeVar id (VDouble x) env1
+      (VString x, Type_string) -> initializeVar id (VString x) env1
+      (VBool x, Type_bool) -> initializeVar id (VBool x) env1
+      _ -> Bad "TYPE ERROR:")
   SReturn exp -> do
-    (val, env1) <- interpretExp exp env
-    Bad $ "INTERNALVALUE: " ++ (
-      case (type_, val) of
-        (Type_int, VInt x) -> "VInt" ++ (show x)
-        (Type_double, VDouble x) -> "VDouble" ++ (show x)
-        (Type_double, VBool x) -> "VBool" ++ (show x)
-        (Type_string, VString x) -> "VString" ++ (show x)
-        _ -> "Error"
-        )
-  SReturnVoid -> Bad $ "INTERNAL VOID RETURN"
+    (val, (functionTable, context, _, prints)) <- interpretExp exp env
+    Ok (changeReturnVal env val)
+  SReturnVoid -> Bad $ "TYPE ERROR:INTERNAL VOID RETURN"
   SWhile exp stm -> whileLOOP exp stm (newBlock env) >>= exitBlock
   SBlock stms -> interpretStms stms type_ env
   SIfElse exp stmTrue stmFalse -> ifThenElse exp stmTrue stmFalse (newBlock env) >>= exitBlock
   SPrintInt exp -> case interpretExp exp env of
     Ok (VInt int, newEnv) ->
-      let () = printInt int
-      in Ok newEnv
-    _ -> Bad $ "Type error: expecting integer, got " ++ show exp
+      printInt int newEnv
+    _ -> Bad $ "TYPE ERROR:Type error: expecting an integer for printInt"
   SPrintDouble exp -> case interpretExp exp env of
     Ok (VDouble double, newEnv) ->
-      let () = printDouble double
-      in Ok newEnv
-    _ -> Bad $ "Type error: expecting double, got " ++ show exp
+      printDouble double newEnv
+    _ -> Bad $ "TYPE ERROR:Type error: expecting double, got " ++ show exp
 
 ifThenElse exp stmTrue stmFalse env =
   case interpretExp exp env of
     Ok (VBool True, newEnv) -> interpretStm Type_void stmTrue env
     Ok (VBool False, newEnv) -> interpretStm Type_void stmFalse env
-    Ok _ -> Bad $ "This expression does not evaluate to a boolean" ++ (show exp)
+    Ok _ -> Bad $ "TYPE ERROR:This expression does not evaluate to a boolean" ++ (show exp)
     Bad s -> Bad s
 
-whileLOOP exp stm env =
+whileLOOP exp stm env = if isReturned env then Ok env else 
   case interpretExp exp env of
     Ok (VBool True, newEnv) -> interpretStm Type_void stm env >>= whileLOOP exp stm
     Ok (VBool False, newEnv) -> Ok newEnv
-    _ -> Bad $ "The expression " ++ (show exp) ++ " does not evaluate to a boolean, or has an issue with it."
+    _ -> Bad $ "TYPE ERROR:The expression " ++ (show exp) ++ " does not evaluate to a boolean, or has an issue with it."
 
 interpretStms :: [Stm] -> Type -> Env -> Err Env 
 interpretStms stms type_ env = foldM
