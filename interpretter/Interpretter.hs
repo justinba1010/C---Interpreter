@@ -17,6 +17,22 @@ getFunctions defs env =
   foldM
     (\env def -> addDefToEnv def env) env defs
 
+evalExps [] vals env = Ok (vals, env)
+evalExps (exp:exps) vals env = case interpretExp exp env of
+  Ok (value, env1) -> evalExps exps (value:vals) env1
+  Bad s -> Bad s
+
+addArgumentsToEnv [] [] env = Ok env
+addArgumentsToEnv (_) [] env = Bad $ "Not enough arguments"
+addArgumentsToEnv [] _ env = Bad $ "Not enough arguments"
+addArgumentsToEnv (val:vals) (arg:args) env = case arg of
+  ADecl type_ id ->
+    case (type_, val) of
+      (Type_bool, VBool x) -> initializeVar id val env >>= addArgumentsToEnv vals args
+      (Type_int, VInt x) ->initializeVar id val env >>= addArgumentsToEnv vals args
+      (Type_string, VString x) ->initializeVar id val env >>= addArgumentsToEnv vals args
+      (Type_double, VDouble x) ->initializeVar id val env >>= addArgumentsToEnv vals args
+
 type InterpretReturn = Err (Value, Env)
 
 getEnvFromIR :: InterpretReturn -> Err Env
@@ -24,7 +40,6 @@ getEnvFromIR interpretReturn = case interpretReturn of
   Ok (_, env) -> Ok env
   Bad s -> Bad s
 
-getValueFromFunction type_ args stms = Ok $ VInt 3
 
 interpretExp :: Exp -> Env -> InterpretReturn
 interpretExp exp env = case exp of
@@ -38,8 +53,19 @@ interpretExp exp env = case exp of
     Bad s -> Bad s
   EApp id exps -> do
     (type_, args, stms) <- lookUpFun id env
-    val <- getValueFromFunction type_ args stms
-    Ok (val, env)
+    (vals, env1) <- evalExps exps [] env
+    newEnv <- addArgumentsToEnv vals args (newEnv env |> newBlock)
+    case interpretStms stms type_ newEnv of
+      Ok _ -> Bad $ "No return"
+      Bad s -> case s of
+        ('I':'N':'T':'E':'R':'N':'A':'L':'V':'A':'L':'U':'E':':':' ':x) ->
+          (case x of
+            ('V':'I':'n':'t':y) -> Ok (VInt (read y :: Integer), env1)
+            ('V':'D':'o':'u':'b':'l':'e':y) -> Ok (VDouble (read y :: Double), env1)
+            ('V':'S':'t':'r':'i':'n':'g':y) -> Ok (VString y, env1)
+            ('V':'B':'o':'o':'l':y) -> Ok (VBool (read y :: Bool), env1)
+            _ -> Bad $ "Something went very wrong" ++ x)
+
   EPIncr (EId (id)) -> do -- Post
     (value, env1) <- interpretExp (EId (id)) env
     case (value) of
@@ -210,26 +236,40 @@ interpretStm type_ stm env = case stm of
   SReturn exp -> do
     (val, env1) <- interpretExp exp env
     Bad $ "INTERNALVALUE: " ++ (
-      case val of
-        VInt x -> "VInt" ++ (show x)
-        VDouble x -> "VDouble" ++ (show x)
-        VBool x -> "VBool" ++ (show x)
-        VString x -> "VString" ++ (show x)
+      case (type_, val) of
+        (Type_int, VInt x) -> "VInt" ++ (show x)
+        (Type_double, VDouble x) -> "VDouble" ++ (show x)
+        (Type_double, VBool x) -> "VBool" ++ (show x)
+        (Type_string, VString x) -> "VString" ++ (show x)
+        _ -> "Error"
         )
   SReturnVoid -> Bad $ "INTERNAL VOID RETURN"
-  SWhile exp stm -> Ok env
-  SBlock stms -> Ok env
-  SIfElse exp stmTrue stmFalse -> Ok env
+  SWhile exp stm -> whileLOOP exp stm (newBlock env) >>= exitBlock
+  SBlock stms -> interpretStms stms type_ env
+  SIfElse exp stmTrue stmFalse -> ifThenElse exp stmTrue stmFalse (newBlock env) >>= exitBlock
   SPrintInt exp -> case interpretExp exp env of
     Ok (VInt int, newEnv) ->
       let () = printInt int
-      in Ok env
+      in Ok newEnv
     _ -> Bad $ "Type error: expecting integer, got " ++ show exp
   SPrintDouble exp -> case interpretExp exp env of
     Ok (VDouble double, newEnv) ->
       let () = printDouble double
-      in Ok env
+      in Ok newEnv
     _ -> Bad $ "Type error: expecting double, got " ++ show exp
+
+ifThenElse exp stmTrue stmFalse env =
+  case interpretExp exp env of
+    Ok (VBool True, newEnv) -> interpretStm Type_void stmTrue env
+    Ok (VBool False, newEnv) -> interpretStm Type_void stmFalse env
+    Ok _ -> Bad $ "This expression does not evaluate to a boolean" ++ (show exp)
+    Bad s -> Bad s
+
+whileLOOP exp stm env =
+  case interpretExp exp env of
+    Ok (VBool True, newEnv) -> interpretStm Type_void stm env >>= whileLOOP exp stm
+    Ok (VBool False, newEnv) -> Ok newEnv
+    _ -> Bad $ "The expression " ++ (show exp) ++ " does not evaluate to a boolean, or has an issue with it."
 
 interpretStms :: [Stm] -> Type -> Env -> Err Env 
 interpretStms stms type_ env = foldM

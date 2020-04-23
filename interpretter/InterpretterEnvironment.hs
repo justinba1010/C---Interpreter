@@ -60,4 +60,9 @@ newBlock :: Env -> Env
 newBlock (functionTable, context) = (functionTable, Map.empty:context)
 
 emptyEnv = (Map.empty, [])
-newEnv functionTable io = (functionTable, [])
+newEnv (functionTable, _) = (functionTable, [])
+
+exitBlock :: Env -> Err Env
+exitBlock (functionTable, []) = Bad "Internal error, no more blocks to exit"
+exitBlock (functionTable, _x:blocks) = Ok (functionTable, blocks)
+

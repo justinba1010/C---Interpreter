@@ -22,8 +22,17 @@ main = do
   if (length args > 0) then do
     s <- readFile $ args !! 0
     case Interpretter.runProgram =<< (pProgram $ myLexer s) of
-      Ok env -> messageAndExit (ExitSuccess) ""
-      Bad s -> messageAndExit (ExitFailure 1) (s ++ "")
-  else
-    messageAndExit (ExitFailure 2) "Enter a filename after call, like:\n$ ./TypeCheck file.c"
+      Ok env -> messageAndExit (ExitFailure 1) "Failure"
+      Bad s -> (case s of
+        ('I':'N':'T':'E':'R':'N':'A':'L':'V':'A':'L':'U':'E':':':' ':x) ->
+          (case x of
+            ('V':'I':'n':'t':y) ->
+              (case (read y :: Int) of
+                0 -> messageAndExit (ExitSuccess) ""
+                z -> messageAndExit (ExitFailure z) (s ++ ""))
+            _ ->  messageAndExit (ExitFailure 1) s
+            )
+        _ -> messageAndExit (ExitFailure 1) s
+        )
+    else messageAndExit (ExitFailure 2) "Enter a filename after call, like:\n$ ./TypeCheck file.c"
 
