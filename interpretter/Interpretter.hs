@@ -8,6 +8,8 @@ import PrintCPP (printTree)
 import ErrM
 import UnsafeJustinIO
 
+justinReturnUnsafe = Id "__UNSAFE_JUSTIN_RETURN_1998CSCE531_0xD34DB33F__"
+
 addDefToEnv def env = case def of
   DFun type_ id args stms -> updateFun id (type_, args, stms) env
 
@@ -22,6 +24,8 @@ getEnvFromIR interpretReturn = case interpretReturn of
   Ok (_, env) -> Ok env
   Bad s -> Bad s
 
+getValueFromFunction type_ args stms = Ok $ VInt 3
+
 interpretExp :: Exp -> Env -> InterpretReturn
 interpretExp exp env = case exp of
   ETrue -> Ok (VBool True, env)
@@ -32,8 +36,11 @@ interpretExp exp env = case exp of
   EId id -> case lookUpVar id env of
     Ok v -> Ok (v, env)
     Bad s -> Bad s
-  EApp id exps -> Bad "Application is undefined at the moment"
-  EPIncr (EId (id)) -> do
+  EApp id exps -> do
+    (type_, args, stms) <- lookUpFun id env
+    val <- getValueFromFunction type_ args stms
+    Ok (val, env)
+  EPIncr (EId (id)) -> do -- Post
     (value, env1) <- interpretExp (EId (id)) env
     case (value) of
       VInt x -> do
@@ -42,39 +49,174 @@ interpretExp exp env = case exp of
       VDouble x -> do
         env2 <- updateVar id (VDouble (x+1)) env1
         Ok (VDouble x, env2)
-  EPDecr (EId (id)) -> do
+  EPDecr (EId (id)) -> do -- Post
     (value, env1) <- interpretExp (EId (id)) env
     case (value) of
-      VInt x -> Ok (VInt x, env1)
+      VInt x -> do
+        env2 <- updateVar id (VInt (x-1)) env1
+        Ok (VInt x, env2)
+      VDouble x -> do
+        env2 <- updateVar id (VDouble (x-1)) env1
+        Ok (VDouble x, env2)
+  EIncr (EId (id)) -> do
+    (value, env1) <- interpretExp (EId (id)) env
+    case (value) of
+      VInt x -> do
+        env2 <- updateVar id (VInt (x+1)) env1
+        Ok (VInt (x+1), env2)
+      VDouble x -> do
+        env2 <- updateVar id (VDouble (x+1)) env1
+        Ok (VDouble (x+1), env2)
+  EDecr (EId (id)) -> do
+    (value, env1) <- interpretExp (EId (id)) env
+    case (value) of
+      VInt x -> do
+        env2 <- updateVar id (VInt (x-1)) env1
+        Ok (VInt (x-1), env2)
+      VDouble x -> do
+        env2 <- updateVar id (VDouble (x-1)) env1
+        Ok (VDouble (x-1), env2)
   ETimes exp1 exp2 -> do
+    (val1, env1) <- interpretExp exp1 env
+    (val2, env2) <- interpretExp exp2 env1
+    case (val1, val2) of
+      (VInt x, VInt y) -> Ok (VInt (x*y), env2)
+      (VDouble x, VDouble y) -> Ok (VDouble (x*y), env2)
+      _ -> Bad $ "Mismatched or incorrect types for operation (*)" ++ (show exp1) ++ " and " ++ (show exp2)
+  EDiv exp1 exp2 -> do
+    (val1, env1) <- interpretExp exp1 env
+    (val2, env2) <- interpretExp exp2 env1
+    case (val1, val2) of
+      (VInt x, VInt y) -> Ok (VInt (div x y), env2)
+      (VDouble x, VDouble y) -> Ok (VDouble (x/y), env2)
+      _ -> Bad $ "Mismatched or incorrect types for operation (/)" ++ (show exp1) ++ " and " ++ (show exp2)
+  EPlus exp1 exp2 -> do
     (val1, env1) <- interpretExp exp1 env
     (val2, env2) <- interpretExp exp2 env1
     case (val1, val2) of
       (VInt x, VInt y) -> Ok (VInt (x+y), env2)
       (VDouble x, VDouble y) -> Ok (VDouble (x+y), env2)
-      _ -> Bad "Need to write a good error message"
-
+      _ -> Bad $ "Mismatched or incorrect types for operation (+)" ++ (show exp1) ++ " and " ++ (show exp2)
+  EMinus exp1 exp2 -> do
+    (val1, env1) <- interpretExp exp1 env
+    (val2, env2) <- interpretExp exp2 env1
+    case (val1, val2) of
+      (VInt x, VInt y) -> Ok (VInt (x-y), env2)
+      (VDouble x, VDouble y) -> Ok (VDouble (x-y), env2)
+      _ -> Bad $ "Mismatched or incorrect types for operation (-)" ++ (show exp1) ++ " and " ++ (show exp2)
+  ELt exp1 exp2 -> do
+    (val1, env1) <- interpretExp exp1 env
+    (val2, env2) <- interpretExp exp2 env1
+    case (val1, val2) of
+      (VInt x, VInt y) -> Ok (VBool (x < y), env2)
+      (VDouble x, VDouble y) -> Ok(VBool (x < y), env2)
+      _ -> Bad $ "Mismatched or incorrect types for operation (<)" ++ (show exp1) ++ " and " ++ (show exp2)
+  EGt exp1 exp2 -> do
+    (val1, env1) <- interpretExp exp1 env
+    (val2, env2) <- interpretExp exp2 env1
+    case (val1, val2) of
+      (VInt x, VInt y) -> Ok (VBool (x > y), env2)
+      (VDouble x, VDouble y) -> Ok (VBool (x > y), env2)
+      _ -> Bad $ "Mismatched or incorrect types for operation (>)" ++ (show exp1) ++ " and " ++ (show exp2)
+  ELtEq exp1 exp2 -> do
+    (val1, env1) <- interpretExp exp1 env
+    (val2, env2) <- interpretExp exp2 env1
+    case (val1, val2) of
+      (VInt x, VInt y) -> Ok (VBool (x <= y), env2)
+      (VDouble x, VDouble y) -> Ok (VBool (x <= y), env2)
+      _ -> Bad $ "Mismatched or incorrect types for operation (<=)" ++ (show exp1) ++ " and " ++ (show exp2)
+  EGtEq exp1 exp2 -> do
+    (val1, env1) <- interpretExp exp1 env
+    (val2, env2) <- interpretExp exp2 env1
+    case (val1, val2) of
+      (VInt x, VInt y) -> Ok (VBool (x >= y), env2)
+      (VDouble x, VDouble y) -> Ok (VBool (x >= y), env2)
+      _ -> Bad $ "Mismatched or incorrect types for operation (>=)" ++ (show exp1) ++ " and " ++ (show exp2)
+  EEq exp1 exp2 -> do
+    (val1, env1) <- interpretExp exp1 env
+    (val2, env2) <- interpretExp exp2 env1
+    case (val1, val2) of
+      (VInt x, VInt y) -> Ok (VBool (x == y), env2)
+      (VDouble x, VDouble y) -> Ok (VBool (x == y), env2)
+      (VBool x, VBool y) -> Ok (VBool (x==y), env2)
+      (VString x, VString y) -> Ok (VBool (x==y), env2)
+      _ -> Bad $ "Mismatched or incorrect types for operation (==)" ++ (show exp1) ++ " and " ++ (show exp2)
+  ENEq exp1 exp2 -> do
+    (val1, env1) <- interpretExp exp1 env
+    (val2, env2) <- interpretExp exp2 env1
+    case (val1, val2) of
+      (VInt x, VInt y) -> Ok (VBool (x /= y), env2)
+      (VDouble x, VDouble y) -> Ok (VBool (x /= y), env2)
+      (VBool x, VBool y) -> Ok (VBool (x/=y), env2)
+      (VString x, VString y) -> Ok (VBool (x/=y), env2)
+      _ -> Bad $ "Mismatched or incorrect types for operation (!=)" ++ (show exp1) ++ " and " ++ (show exp2)
+  EAnd exp1 exp2 -> do
+    (val1, env1) <- interpretExp exp1 env
+    (val2, env2) <- interpretExp exp2 env1
+    case (val1, val2) of
+      (VBool x, VBool y) -> Ok (VBool (x && y), env2)
+      _ -> Bad $ "Mismatched or incorrect types for operation (&&)" ++ (show exp1) ++ " and " ++ (show exp2)
+  EOr exp1 exp2 -> do
+    (val1, env1) <- interpretExp exp1 env
+    (val2, env2) <- interpretExp exp2 env1
+    case (val1, val2) of
+      (VBool x, VBool y) -> Ok (VBool (x || y), env2)
+      _ -> Bad $ "Mismatched or incorrect types for operation (||)" ++ (show exp1) ++ " and " ++ (show exp2)
+  EAss (EId id) exp2 -> do
+    (val1, env1) <- interpretExp exp2 env
+    val2 <- lookUpVar (id) env1
+    case (val2, val1) of
+      (VIntUninitialized, VInt x) ->
+        updateVar (id) val1 env1 >>= (\y -> Ok (VInt x, y))
+      (VInt _, VInt x) ->
+        updateVar (id) val1 env1 >>= (\y -> Ok (VInt x, y))
+      (VDoubleUninitialized, VDouble x) ->
+        updateVar (id) val1 env1 >>= (\y -> Ok (VDouble x, y))
+      (VDouble _, VDouble x) ->
+        updateVar (id) val1 env1 >>= (\y -> Ok (VDouble x, y))
+      (VBoolUninitialized, VBool x) ->
+        updateVar (id) val1 env1 >>= (\y -> Ok (VBool x, y))
+      (VBool _, VBool x) ->
+        updateVar (id) val1 env1 >>= (\y -> Ok (VBool x, y))
+      (VStringUninitialized, VString x) ->
+        updateVar (id) val1 env1 >>= (\y -> Ok (VString x, y))
+      (VString _, VString x) ->
+        updateVar (id) val1 env1 >>= (\y -> Ok (VString x, y))
+      _ -> Bad $ "Mismatched or incorrect types for assignment " ++ show(id) ++ " = " ++ (show exp2)
+  EAss exp1 exp2 -> Bad $ "Cannot assign an expression a value at this time: " ++ (show exp1) ++ " = " ++ (show exp2)
 
 interpretStm :: Type -> Stm -> Env -> Err Env
 interpretStm type_ stm env = case stm of
   SExp exp -> getEnvFromIR $ interpretExp exp env
   SDecls typ ids ->
     foldM (\env id ->
-      updateVar id (
+      initializeVar id (
         case typ of
           Type_int -> VIntUninitialized
           Type_double -> VDoubleUninitialized
           Type_string -> VStringUninitialized
+          Type_bool -> VBoolUninitialized
       ) env
     ) env ids
-  SInit type_ id exp -> updateVar id (
-    case type_ of
-      Type_int -> VIntUninitialized
-      Type_double -> VDoubleUninitialized
-      Type_string -> VStringUninitialized
-    ) env
-  SReturn exp -> Ok env
-  SReturnVoid -> Ok env
+  SInit type_ id exp -> do
+    (val, env1) <- interpretExp exp env 
+    initializeVar id (
+      case (val, type_) of
+        (VInt x, Type_int) -> VInt x
+        (VDouble x, Type_double) -> VDouble x
+        (VString x, Type_string) -> VString x
+        (VBool x, Type_bool) -> VBool x
+      ) env1
+  SReturn exp -> do
+    (val, env1) <- interpretExp exp env
+    Bad $ "INTERNALVALUE: " ++ (
+      case val of
+        VInt x -> "VInt" ++ (show x)
+        VDouble x -> "VDouble" ++ (show x)
+        VBool x -> "VBool" ++ (show x)
+        VString x -> "VString" ++ (show x)
+        )
+  SReturnVoid -> Bad $ "INTERNAL VOID RETURN"
   SWhile exp stm -> Ok env
   SBlock stms -> Ok env
   SIfElse exp stmTrue stmFalse -> Ok env
@@ -96,8 +238,8 @@ interpretStms stms type_ env = foldM
 executeMain :: Env -> Err Env
 executeMain env = case lookUpFun (Id "main") env of
   Ok (type_, [], stms) -> interpretStms stms type_ (newBlock env)
-  Ok (type_, args, stms) -> fail "Command line arguments are unimplemented currently."
-  _ -> fail "There is no main entry function."
+  Ok (type_, args, stms) -> Bad "Command line arguments are unimplemented currently."
+  _ -> Bad "There is no main entry function."
 
 runProgram program = case program of
   PDefs [] -> Bad "No main program :("

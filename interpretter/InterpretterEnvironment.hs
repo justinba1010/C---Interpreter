@@ -21,7 +21,7 @@ data Value =
   | VUndefined
 
 lookUpVar :: Id -> Env -> Err Value
-lookUpVar id (_, []) = fail "TYPECHECKER ERROR: Empty Context Stack"
+lookUpVar id (_, []) = Bad "TYPECHECKER ERROR: Empty Context Stack"
 lookUpVar id (_sig, (currBlock:[])) = Map.lookup id currBlock |> errIfNothing ("Uninitialized variable" ++ (removeId id))
 lookUpVar id (_sig, (currBlock:blocks)) = case Map.lookup id currBlock of
   Just x -> Ok x

@@ -7,7 +7,7 @@ import ErrM
 
 errIfNothing s a = case a of
   Just b -> Ok b
-  _ -> fail s
+  _ -> Bad s
 
 removeId id = case id of
   Id whatwewant -> whatwewant
