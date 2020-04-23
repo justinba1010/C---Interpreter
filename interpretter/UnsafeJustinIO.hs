@@ -1,16 +1,16 @@
 module UnsafeJustinIO where
-import Data.Text.Unsafe
 import System.IO
+import System.IO.Unsafe
 -- If a `*** Exception: read: no parse` shows up, this is where it was thrown
 import ErrM
 
 printInt int (functionTable, context, exitCode, prints) =
   Ok (functionTable, context, exitCode, (show int):prints)
 
-readInt () = (read (unsafeDupablePerformIO $ getLine) :: Integer)
+readInt () = (read (unsafePerformIO $ getLine) :: Integer)
 
 printDouble int (functionTable, context, exitCode, prints) =
   Ok (functionTable, context, exitCode, (show int):prints)
 
-readDouble () = (read (unsafeDupablePerformIO $ getLine) :: Double)
+readDouble () = (read (unsafePerformIO $ getLine) :: Double)
 
