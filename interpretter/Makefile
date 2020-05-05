@@ -1,3 +1,5 @@
+lab2: TestCPP Interpret.hs Interpretter.hs
+	ghc Interpret.hs -o lab2
 TestCPP:
 	happy -gca ParCPP.y
 	alex -g LexCPP.x
@@ -9,8 +11,6 @@ lab2-testsuite:
 #test: typeChecker
 	#bash ./tests.sh auto
 
-lab2: TestCPP Interpret.hs Interpretter.hs
-	ghc Interpret.hs -o lab2
 
 clean:
 	-rm -f *.log *.aux *.hi *.o *.dvi

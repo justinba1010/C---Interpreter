@@ -7,6 +7,7 @@ import Control.Monad
 import PrintCPP (printTree)
 import ErrM
 import UnsafeJustinIO
+import qualified TypeCheckAux as TCA
 
 justinReturnUnsafe = Id "__UNSAFE_JUSTIN_RETURN_1998CSCE531_0xD34DB33F__"
 
@@ -263,11 +264,13 @@ interpretStms stms type_ env = foldM
 executeMain :: Env -> Err Env
 executeMain env = case lookUpFun (Id "main") env of
   Ok (type_, [], stms) -> interpretStms stms type_ (newBlock env)
-  Ok (type_, args, stms) -> Bad "Command line arguments are unimplemented currently."
+  Ok (type_, args, stms) -> Bad "TYPE ERROR: Command line arguments are unimplemented currently."
   _ -> Bad "There is no main entry function."
 
-runProgram program = case program of
-  PDefs [] -> Bad "No main program :("
-  PDefs defs ->
-    getFunctions defs (emptyEnv)
-    >>= executeMain
+runProgram program = if TCA.typeCheck program then
+    case program of
+    PDefs [] -> Bad "TYPE ERROR: No main program :("
+    PDefs defs ->
+      getFunctions defs (emptyEnv)
+      >>= executeMain
+    else Bad "TYPE ERROR:"
