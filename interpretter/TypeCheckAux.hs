@@ -43,6 +43,7 @@ inferExp env exp = case exp of
   EMinus exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2
   ELt exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2 >> Ok Type_bool
   EGt exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2 >> Ok Type_bool
+  EStrApp exp1 exp2 -> inferBin [Type_string] env exp1 exp2 >> Ok Type_string
   ELtEq exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2 >> Ok Type_bool
   EGtEq exp1 exp2 -> inferBin [Type_int, Type_double] env exp1 exp2 >> Ok Type_bool
   EEq exp1 exp2 -> inferBin [Type_int, Type_double, Type_string, Type_bool] env exp1 exp2 >> Ok Type_bool
@@ -85,6 +86,8 @@ checkStm env val x = case x of
     checkExp env exp Type_int >> Ok env
   SPrintDouble exp ->
     checkExp env exp Type_double >> Ok env
+  SPrintString exp ->
+    checkExp env exp Type_string >> Ok env
   SExp exp -> do
     inferExp env exp
     Ok env

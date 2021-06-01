@@ -140,6 +140,12 @@ interpretExp exp env = case exp of
       (VInt x, VInt y) -> Ok (VBool (x > y), env2)
       (VDouble x, VDouble y) -> Ok (VBool (x > y), env2)
       _ -> Bad $ "TYPE ERROR:Mismatched or incorrect types for operation (>)" ++ (show exp1) ++ " and " ++ (show exp2)
+  EStrApp exp1 exp2 -> do
+    (val1, env1) <- interpretExp exp1 env
+    (val2, env2) <- interpretExp exp2 env1
+    case (val1, val2) of
+      (VString x, VString y) -> Ok (VString (x ++ y), env2)
+      _ -> Bad $ "TYPE ERROR: Cannot concatenate nonstrings " ++ (show exp1) ++ " @@" ++ (show exp2)
   ELtEq exp1 exp2 -> do
     (val1, env1) <- interpretExp exp1 env
     (val2, env2) <- interpretExp exp2 env1
@@ -243,6 +249,9 @@ interpretStm type_ stm env = if isReturned env then Ok env else case stm of
     Ok (VDouble double, newEnv) ->
       printDouble double newEnv
     _ -> Bad $ "TYPE ERROR:Type error: expecting double, got " ++ show exp
+  SPrintString exp -> case interpretExp exp env of
+    Ok (VString string, newEnv) -> printString string newEnv
+    _ -> Bad $ "Type error: expecting string, got " ++ show exp
 
 ifThenElse exp stmTrue stmFalse env =
   case interpretExp exp env of

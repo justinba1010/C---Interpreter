@@ -56,24 +56,26 @@ import ErrM
   '==' { PT _ (TS _ 16) }
   '>' { PT _ (TS _ 17) }
   '>=' { PT _ (TS _ 18) }
-  'bool' { PT _ (TS _ 19) }
-  'double' { PT _ (TS _ 20) }
-  'else' { PT _ (TS _ 21) }
-  'false' { PT _ (TS _ 22) }
-  'if' { PT _ (TS _ 23) }
-  'int' { PT _ (TS _ 24) }
-  'printDouble(' { PT _ (TS _ 25) }
-  'printInt(' { PT _ (TS _ 26) }
-  'readDouble()' { PT _ (TS _ 27) }
-  'readInt()' { PT _ (TS _ 28) }
-  'return' { PT _ (TS _ 29) }
-  'string' { PT _ (TS _ 30) }
-  'true' { PT _ (TS _ 31) }
-  'void' { PT _ (TS _ 32) }
-  'while' { PT _ (TS _ 33) }
-  '{' { PT _ (TS _ 34) }
-  '||' { PT _ (TS _ 35) }
-  '}' { PT _ (TS _ 36) }
+  '@@' { PT _ (TS _ 19) }
+  'bool' { PT _ (TS _ 20) }
+  'double' { PT _ (TS _ 21) }
+  'else' { PT _ (TS _ 22) }
+  'false' { PT _ (TS _ 23) }
+  'if' { PT _ (TS _ 24) }
+  'int' { PT _ (TS _ 25) }
+  'printDouble(' { PT _ (TS _ 26) }
+  'printInt(' { PT _ (TS _ 27) }
+  'printString(' { PT _ (TS _ 28) }
+  'readDouble()' { PT _ (TS _ 29) }
+  'readInt()' { PT _ (TS _ 30) }
+  'return' { PT _ (TS _ 31) }
+  'string' { PT _ (TS _ 32) }
+  'true' { PT _ (TS _ 33) }
+  'void' { PT _ (TS _ 34) }
+  'while' { PT _ (TS _ 35) }
+  '{' { PT _ (TS _ 36) }
+  '||' { PT _ (TS _ 37) }
+  '}' { PT _ (TS _ 38) }
   L_integ  { PT _ (TI $$) }
   L_doubl  { PT _ (TD $$) }
   L_quoted { PT _ (TL $$) }
@@ -116,6 +118,7 @@ Stm : Exp ';' { AbsCPP.SExp $1 }
     | 'if' '(' Exp ')' Stm 'else' Stm { AbsCPP.SIfElse $3 $5 $7 }
     | 'printInt(' Exp ')' ';' { AbsCPP.SPrintInt $2 }
     | 'printDouble(' Exp ')' ';' { AbsCPP.SPrintDouble $2 }
+    | 'printString(' Exp ')' ';' { AbsCPP.SPrintString $2 }
 ListStm :: { [Stm] }
 ListStm : {- empty -} { [] } | ListStm Stm { flip (:) $1 $2 }
 Exp15 :: { Exp }
@@ -150,6 +153,7 @@ Exp9 : Exp9 '<' Exp10 { AbsCPP.ELt $1 $3 }
      | Exp9 '>' Exp10 { AbsCPP.EGt $1 $3 }
      | Exp9 '<=' Exp10 { AbsCPP.ELtEq $1 $3 }
      | Exp9 '>=' Exp10 { AbsCPP.EGtEq $1 $3 }
+     | Exp9 '@@' Exp10 { AbsCPP.EStrApp $1 $3 }
      | Exp10 { $1 }
 Exp8 :: { Exp }
 Exp8 : Exp8 '==' Exp9 { AbsCPP.EEq $1 $3 }

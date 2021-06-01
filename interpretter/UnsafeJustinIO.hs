@@ -12,5 +12,8 @@ readInt () = (read (unsafePerformIO $ getLine) :: Integer)
 printDouble int (functionTable, context, exitCode, prints) =
   Ok (functionTable, context, exitCode, (show int):prints)
 
+printString s (functionTable, context, exitCode, prints) =
+  Ok (functionTable, context, exitCode, s:prints)
+
 readDouble () = (read (unsafePerformIO $ getLine) :: Double)
 

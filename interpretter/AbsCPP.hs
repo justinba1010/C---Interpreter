@@ -26,6 +26,7 @@ data Stm
     | SIfElse Exp Stm Stm
     | SPrintInt Exp
     | SPrintDouble Exp
+    | SPrintString Exp
   deriving (Eq, Ord, Show, Read)
 
 data Exp
@@ -55,6 +56,7 @@ data Exp
     | EAnd Exp Exp
     | EOr Exp Exp
     | EAss Exp Exp
+    | EStrApp Exp Exp
     | ETyped Exp Type
   deriving (Eq, Ord, Show, Read)
 

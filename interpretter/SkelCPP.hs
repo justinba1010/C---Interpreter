@@ -33,6 +33,7 @@ transStm x = case x of
   SIfElse exp stm1 stm2 -> failure x
   SPrintInt exp -> failure x
   SPrintDouble exp -> failure x
+  SPrintString exp -> failure x
 transExp :: Exp -> Result
 transExp x = case x of
   SReadInt -> failure x
@@ -61,6 +62,7 @@ transExp x = case x of
   EAnd exp1 exp2 -> failure x
   EOr exp1 exp2 -> failure x
   EAss exp1 exp2 -> failure x
+  EStrApp exp1 exp2 -> failure x
   ETyped exp type_ -> failure x
 transType :: Type -> Result
 transType x = case x of

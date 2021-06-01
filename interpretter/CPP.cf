@@ -18,6 +18,7 @@ SBlock.       Stm ::= "{" [Stm] "}" ;
 SIfElse.      Stm ::= "if" "(" Exp ")" Stm "else" Stm ;
 SPrintInt.    Stm ::= "printInt(" Exp ")" ";" ;
 SPrintDouble. Stm ::= "printDouble(" Exp ")" ";" ;
+SPrintString. Stm ::= "printString(" Exp ")" ";" ;
 
 terminator Stm "" ;
 
@@ -51,6 +52,7 @@ ENEq.    Exp8   ::= Exp8  "!=" Exp9 ;
 EAnd.    Exp4   ::= Exp4  "&&" Exp5 ;
 EOr.     Exp3   ::= Exp3  "||" Exp4 ;
 EAss.    Exp2   ::= Exp3 "=" Exp2 ;
+EStrApp. Exp9   ::= Exp9 "@@" Exp10;
 
 internal ETyped. Exp15 ::= "(" Exp ":" Type ")" ;
 

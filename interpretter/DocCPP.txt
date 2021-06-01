@@ -43,11 +43,11 @@ The reserved words used in CPP are the following:
 The symbols used in CPP are the following:
   | ( | ) | { | }
   | , | ; | = | printInt(
-  | printDouble( | readInt() | readDouble() | ++
-  | -- | * | / | +
-  | - | < | > | <=
-  | >= | == | != | &&
-  | || |  |  |
+  | printDouble( | printString( | readInt() | readDouble()
+  | ++ | -- | * | /
+  | + | - | < | >
+  | <= | >= | == | !=
+  | && | || | @@ |
 
 ===Comments===
 Single-line comments begin with #, //.Multiple-line comments are  enclosed with /* and */.
@@ -76,6 +76,7 @@ All other symbols are terminals.
   |  |  **|**  | ``if`` ``(`` //Exp// ``)`` //Stm// ``else`` //Stm//
   |  |  **|**  | ``printInt(`` //Exp// ``)`` ``;``
   |  |  **|**  | ``printDouble(`` //Exp// ``)`` ``;``
+  |  |  **|**  | ``printString(`` //Exp// ``)`` ``;``
   | //[Stm]// | -> | **eps**
   |  |  **|**  | //Stm// //[Stm]//
   | //Exp15// | -> | ``readInt()``
@@ -104,6 +105,7 @@ All other symbols are terminals.
   |  |  **|**  | //Exp9// ``>`` //Exp10//
   |  |  **|**  | //Exp9// ``<=`` //Exp10//
   |  |  **|**  | //Exp9// ``>=`` //Exp10//
+  |  |  **|**  | //Exp9// ``@@`` //Exp10//
   |  |  **|**  | //Exp10//
   | //Exp8// | -> | //Exp8// ``==`` //Exp9//
   |  |  **|**  | //Exp8// ``!=`` //Exp9//
